@@ -51,7 +51,7 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
     ui.painter().galley(pos2(x, cy - galley.size().y / 2.0), galley, t.text_dim);
     x += w + 14.0;
     for (icon, id, tip, enabled) in
-        [(Icon::Undo, "edit.undo", tl!("Undo"), app.session.can_undo()), (Icon::Redo, "edit.redo", tl!("Redo"), app.session.can_redo())]
+        [(Icon::Undo, "edit.undo", tl!("Undo"), app.session.history.can_undo()), (Icon::Redo, "edit.redo", tl!("Redo"), app.session.history.can_redo())]
     {
         let r = Rect::from_min_size(pos2(x, cy - 15.0), vec2(30.0, 30.0));
         let resp = ui.add_enabled_ui(enabled, |ui| style::icon_button(ui, r, egui::Id::unique(("studio-history", id)), icon, false, &t, tip)).inner;
