@@ -6,15 +6,6 @@
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable))]
 
-/// FilmCraft as craft-update knows it, with its 128 px icon and accent colour: the update
-/// prompt shows both, and an AppImage's menu entry gets the icon.
-#[cfg(not(target_arch = "wasm32"))]
-pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
-    icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.filmcraft.png")),
-    accent: Some([0x8b, 0x5c, 0xf6]),
-    ..craft_update::suite::FILMCRAFT
-};
-
 /// A literal UI string in the language the interface is drawn in (`i18n::t`). Only literals: the
 /// i18n tests read every `tl!` literal in the crate and require a Spanish translation for it.
 macro_rules! tl {
@@ -72,7 +63,6 @@ pub mod source_playback;
 pub mod state;
 pub mod theme;
 mod theme_favorites;
-pub mod updates_ui;
 pub mod widgets;
 
 use std::collections::HashMap;
@@ -207,7 +197,6 @@ pub struct FilmcraftApp {
     pub scrub: scrub::ScrubAudio,
     pub hooks: HostHooks,
     pub dialog: Option<Dialog>,
-    pub(crate) updates_rt: updates_ui::Runtime,
     pub file_dialogs: panels::file_dialogs::FileDialogState,
     /// The native file dialog the host is showing ([`Self::pick`]).
     native_dialog: Option<native_dialogs::PendingDialog>,

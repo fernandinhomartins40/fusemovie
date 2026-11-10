@@ -525,3 +525,19 @@ fn project_captured_folder_outside_the_project_is_not_used() {
     assert!(s.execute("file.projectSettings.scratchDisks", json!({"captured": "file://192.0.2.1/s/cap"})).is_err());
     let _ = std::fs::remove_dir_all(&d);
 }
+
+/// The per-user data folder is named after the product in `brand.env`, never after upstream
+/// FilmCraft, so the two installs keep separate settings.
+#[test]
+fn data_dir_uses_the_brand_name() {
+    for key in ["BRAND_NAME", "BRAND_FILE"] {
+        assert!(!crate::autosave::brand(key).is_empty(), "{key}");
+    }
+    assert_ne!(crate::autosave::brand("BRAND_NAME"), "FilmCraft");
+    if std::env::var_os("FILMCRAFT_DATA_DIR").is_none()
+        && let Some(d) = crate::autosave::default_data_dir()
+    {
+        let last = d.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        assert!(last == crate::autosave::brand("BRAND_NAME") || last == crate::autosave::brand("BRAND_FILE") || last == "data", "{}", d.display());
+    }
+}

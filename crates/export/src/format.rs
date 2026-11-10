@@ -549,7 +549,7 @@ impl ExportSettings {
         }
         self.validate_audio_settings()?;
         if self.field_order != FieldOrder::Progressive && self.has_video() {
-            return Err(ExportError::Unsupported(format!("{} field order: FilmCraft's encoders write progressive frames", self.field_order.label())));
+            return Err(ExportError::Unsupported(format!("{} field order: the encoders write progressive frames", self.field_order.label())));
         }
         if self.effects.image_overlay.enabled && self.effects.image_overlay.path.trim().is_empty() {
             return Err(ExportError::Unsupported("image overlay: no image file chosen".into()));

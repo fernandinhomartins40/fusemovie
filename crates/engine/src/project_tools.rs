@@ -8,7 +8,7 @@
 //! | `file.closeAllProjects` / `file.closeAllOtherProjects` | File ▸ Close All Projects / Close All Other Projects |
 //! | `file.saveAsTemplate` | File ▸ Save as Template… (`file.templates`, `file.newProjectFromTemplate`) |
 //! | `file.importFromMediaBrowser` | File ▸ Import from Media Browser (⌥⌘I) |
-//! | `file.exportSelectionProject` | File ▸ Export ▸ Selection as FilmCraft Project… |
+//! | `file.exportSelectionProject` | File ▸ Export ▸ Selection as {app} Project… |
 //! | `file.exportAle` | File ▸ Export ▸ Avid Log Exchange… |
 //! | `file.mediaPropertiesFile` / `file.mediaProperties` | File ▸ Get Media File Properties for ▸ File… / Selection… (⇧⌘H) |
 //! | `file.projectSettings.general` / `.scratchDisks` | File ▸ Project Settings ▸ General… / Scratch Disks… |
@@ -124,7 +124,7 @@ pub(crate) fn commands() -> Vec<CommandSpec> {
         }),
         spec(
             "file.exportSelectionProject",
-            "Selection as FilmCraft Project…",
+            "Selection as {app} Project…",
             &["File", "Export"],
             None,
             r#"{"path":str,"items":[id]?}"#,
@@ -336,7 +336,7 @@ fn only_one_project(_: &Session) -> std::result::Result<(), String> {
     Err("only one project is open".into())
 }
 
-const NO_CAPTIONS: &str = "the clip's media has no embedded captions FilmCraft can read (embedded CEA-608/708 caption streams are not supported yet)";
+const NO_CAPTIONS: &str = "the clip's media has no embedded captions this app can read (embedded CEA-608/708 caption streams are not supported yet)";
 
 fn no_embedded_captions(_: &Session) -> std::result::Result<(), String> {
     Err(NO_CAPTIONS.into())
@@ -1173,7 +1173,7 @@ fn source_settings(s: &mut Session, p: &Value) -> Result<Value> {
         "codec": codec,
         "container": m.info.container,
         "settings": [],
-        "message": format!("{} has no source settings in FilmCraft. Source settings apply to camera raw formats (R3D, ARRIRAW, CinemaDNG, ProRes RAW…), which FilmCraft does not decode.", if codec.is_empty() { "This clip".to_string() } else { codec.to_uppercase() }),
+        "message": format!("{} has no source settings here. Source settings apply to camera raw formats (R3D, ARRIRAW, CinemaDNG, ProRes RAW…), which this app does not decode.", if codec.is_empty() { "This clip".to_string() } else { codec.to_uppercase() }),
     }))
 }
 

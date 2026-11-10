@@ -11,6 +11,8 @@
 //! - [`t`]: the same for a string that is not a literal (a name from a registry or a list).
 //! - [`tr_ctx`]: when one English word needs different translations (the Edit menu, the Edit button).
 //! - [`fmt`]: fill `{name}` placeholders after translating a template; translators may reorder them.
+//! - `{app}` in a source string or translation is the product name ([`crate::brand::APP_NAME`]):
+//!   every lookup above fills it, so no UI string or catalog spells the name out.
 //!
 //! Japanese text uses the Japanese craft-fonts when FilmCraft was built with them (`CRAFT_FONTS_DIR`;
 //! `theme::install` already puts them in every font family, see [`craft_japanese_font`]), otherwise
@@ -24,7 +26,8 @@
 mod catalog;
 
 use std::cell::Cell;
-use std::sync::{Arc, OnceLock};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 
 use catalog::Catalog;
 
@@ -260,7 +263,7 @@ impl Language {
 
     /// Translate an English UI string; unknown strings come back unchanged.
     pub fn tr(self, text: &str) -> &str {
-        self.catalog().and_then(|c| c.plain(text)).unwrap_or(text)
+        fill_app(self.catalog().and_then(|c| c.plain(text)).unwrap_or(text))
     }
 
     /// Does this language's catalog translate `text`? (English never does: it is the source.)
@@ -371,7 +374,23 @@ pub fn matches_query(text: &str, query: &str) -> bool {
 /// first column is that context); falls back to the context-free translation.
 pub fn tr_ctx<'a>(context: &str, text: &'a str) -> &'a str {
     let lang = current();
-    lang.catalog().and_then(|c| c.contextual(context, text)).unwrap_or_else(|| lang.tr(text))
+    lang.catalog().and_then(|c| c.contextual(context, text)).map(fill_app).unwrap_or_else(|| lang.tr(text))
+}
+
+/// `text` with `{app}` replaced by the product name. The filled copies are kept for the life of
+/// the process, one per distinct UI string (a fixed set), so lookups keep returning `&str`.
+fn fill_app(text: &str) -> &str {
+    if !text.contains("{app}") {
+        return text;
+    }
+    static FILLED: OnceLock<Mutex<HashMap<String, &'static str>>> = OnceLock::new();
+    let mut filled = FILLED.get_or_init(Mutex::default).lock().unwrap_or_else(PoisonError::into_inner);
+    if let Some(s) = filled.get(text) {
+        return s;
+    }
+    let s: &'static str = Box::leak(text.replace("{app}", crate::brand::APP_NAME).into_boxed_str());
+    filled.insert(text.to_owned(), s);
+    s
 }
 
 /// Fill `{name}` placeholders. Unknown placeholders are left as written.

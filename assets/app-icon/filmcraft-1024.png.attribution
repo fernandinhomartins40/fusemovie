@@ -1,8 +1,8 @@
 asset:        filmcraft-1024.png
-title:        FilmCraft app icon, 1024 px render
-author:       Brandon Thomas (FilmCraft owner), for the FilmCraft project
-source:       original work (drawn by the owner in ArtCraft, then vectorised)
+title:        Fusemovie app icon, 1024 px render
+author:       Fuse (Fusemovie), hand-written SVG geometry
+source:       original work (four shapes: rounded tile, film frame, perforations, play triangle)
 license:      MIT OR Apache-2.0
 license-file: assets/app-icon/LICENSE.txt
-added:        2026-10-02 by Claude (agent) for Brandon Thomas
-notes:        Rendered from filmcraft.svg with resvg by packaging/icons.sh.
+added:        2026-11-10 by Claude (agent), replacing the upstream FilmCraft owl icon
+notes:        Amber #FDB528 tile, near-black #141414 film frame, white play mark; 512 viewBox, rx=112. Vector in filmcraft.svg; PNG/ICO/ICNS drawn from the same geometry with Pillow. See assets/app-icon/README.md.

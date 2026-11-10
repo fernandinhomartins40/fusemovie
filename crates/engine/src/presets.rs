@@ -547,7 +547,7 @@ pub fn parse_file_detailed(bytes: &[u8]) -> std::result::Result<crate::prfpset::
         return crate::prfpset::parse_prfpset(text);
     }
     if !trimmed.starts_with('{') {
-        return Err("not an effect preset file (expected Premiere XML or FilmCraft JSON)".into());
+        return Err("not an effect preset file (expected Premiere XML or this app's JSON)".into());
     }
     let f: PresetFile = serde_json::from_str(text).map_err(|e| format!("not an effect preset file: {e}"))?;
     if f.format != FILE_FORMAT {

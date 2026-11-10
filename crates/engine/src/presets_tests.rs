@@ -377,7 +377,7 @@ fn mixed_supported_and_unsupported_preset_reports_warning() {
     assert_eq!(parsed.presets[0].effects.len(), 1);
     assert_eq!(parsed.presets[0].effects[0].effect, "black_white");
     assert!(
-        parsed.warnings.iter().any(|w| w.contains("effects not supported by FilmCraft") && w.contains("AE.ThirdParty.UnsupportedWarp")),
+        parsed.warnings.iter().any(|w| w.contains("effects not supported here") && w.contains("AE.ThirdParty.UnsupportedWarp")),
         "expected warning for unsupported effect in mixed preset, got: {:?}",
         parsed.warnings
     );

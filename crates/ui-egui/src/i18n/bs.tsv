@@ -5,7 +5,7 @@
 # localization resources were used. AI-assisted (Claude Code), not yet reviewed by a native speaker;
 # the wording is shared with storytold/craft-i18n (locales/bs/filmcraft.tsv and common.tsv).
 
-	About FilmCraft	O FilmCraftu
+	About {app}	O {app}u
 	Add Audio Submix Track	Dodaj audio podmiks traku
 	Add Caption at Playhead	Dodaj titl na glavu za reprodukciju
 	Add Chapter Marker…	Dodaj marker poglavlja…
@@ -31,7 +31,6 @@
 	Apply Default Transitions to Selection	Primijeni zadane prijelaze na odabir
 	Apply Video Transition	Primijeni video prijelaz
 	Arrange	Rasporedi
-	ArtCraft Website	Web stranica ArtCrafta
 	Assembly	Sklapanje
 	Attach Proxies…	Priloži proksije…
 	Audio	Zvuk
@@ -127,9 +126,6 @@
 	File	Datoteka
 	File…	Datoteka…
 	Fill frame	Ispuni kadar
-	FilmCraft Help…	Pomoć za FilmCraft…
-	FilmCraft on GitHub	FilmCraft na GitHubu
-	FilmCraft on getartcraft.com	FilmCraft na getartcraft.com
 	Find Next	Pronađi sljedeće
 	Find…	Pronađi…
 	Fit	Uklopi
@@ -173,7 +169,6 @@
 	Insert Frame Hold Segment	Umetni segment zadržavanja sličice
 	Install Motion Graphics Template…	Instaliraj predložak animirane grafike…
 	Interpret Footage…	Interpretiraj snimak…
-	Join the ArtCraft Discord…	Pridružite se ArtCraft Discordu…
 	Keyboard Shortcuts…	Prečice na tastaturi…
 	Label	Oznaka
 	Labels…	Oznake…
@@ -264,7 +259,6 @@
 	Render Selection	Iscrtaj odabir
 	Replace Fonts in Projects…	Zamijeni fontove u projektima…
 	Replace With Clip	Zamijeni klipom
-	Report an Issue…	Prijavi problem…
 	Reset All Parameters	Vrati sve parametre na početno
 	Reset Duration	Vrati trajanje na početno
 	Reset to Saved Layout	Vrati na sačuvani raspored
@@ -299,7 +293,7 @@
 	Select Previous Graphic	Odaberi prethodnu grafiku
 	Select Previous Layer	Odaberi prethodni sloj
 	Selection Follows Playhead	Odabir prati glavu za reprodukciju
-	Selection as FilmCraft Project…	Odabir kao FilmCraft projekat…
+	Selection as {app} Project…	Odabir kao {app} projekat…
 	Selection…	Odabir…
 	Send Backward	Pomakni nazad
 	Send to Back	Postavi na dno
@@ -372,7 +366,7 @@
 	FCPXML…	FCPXML…
 	Final Cut Pro XML…	Final Cut Pro XML…
 	General…	Općenito…
-	Hide FilmCraft	Sakrij FilmCraft
+	Hide {app}	Sakrij {app}
 	Hide Others	Sakrij ostale
 	Iris	Iris
 	Magenta	Magenta
@@ -380,7 +374,7 @@
 	OMF…	OMF…
 	OpenTimelineIO…	OpenTimelineIO…
 	Proxy	Proksi
-	Quit FilmCraft	Zatvori FilmCraft
+	Quit {app}	Zatvori {app}
 	Save Changes to this Workspace	Sačuvaj promjene u ovom radnom prostoru
 	Save as New Workspace…	Sačuvaj kao novi radni prostor…
 	Refresh Changed Media	Osvježi promijenjene medije
@@ -394,7 +388,6 @@
 	Master volume: use the Audio Track Mixer	Glavna jačina: koristite mikser audio traka
 	Search	Pretraga
 	Quick Export	Brzi izvoz
-	Join the ArtCraft Discord (discord.gg/artcraft)	Pridružite se ArtCraft Discordu (discord.gg/artcraft)
 	Cancel	Otkaži
 	OK	U redu
 	Interpret Footage	Interpretiraj snimak
@@ -437,10 +430,7 @@
 	Delete Caption Track	Izbriši traku titlova
 	Delete Empty Caption Tracks	Izbriši prazne trake titlova
 	Version {version}	Verzija {version}
-	A clean-room, pure-Rust non-linear video editor. Part of the ArtCraft family.	Nelinearni video uređivač u čistom Rustu, napisan od nule. Dio porodice ArtCraft.
-	Join the ArtCraft Discord	Pridružite se ArtCraft Discordu
-	Source code on GitHub	Izvorni kod na GitHubu
-	Report an issue	Prijavi problem
+	A clean-room, pure-Rust non-linear video editor.	Nelinearni video uređivač u čistom Rustu, napisan od nule.
 	MIT OR Apache-2.0. Fonts: Inter, Noto Serif and JetBrains Mono (SIL OFL 1.1).	MIT OR Apache-2.0. Fontovi: Inter, Noto Serif i JetBrains Mono (SIL OFL 1.1).
 	just now	upravo sada
 	{n} s ago	prije {n} s
@@ -458,8 +448,8 @@
 	No background jobs.	Nema pozadinskih zadataka.
 	Recover Unsaved Changes	Oporavi nesačuvane promjene
 	Untitled	Bez naslova
-	FilmCraft was closed while “{name}” had unsaved changes.	FilmCraft je zatvoren dok je „{name}” imao nesačuvane promjene.
-	FilmCraft quit unexpectedly while “{name}” had unsaved changes.	FilmCraft se neočekivano zatvorio dok je „{name}” imao nesačuvane promjene.
+	{app} was closed while “{name}” had unsaved changes.	{app} je zatvoren dok je „{name}” imao nesačuvane promjene.
+	{app} quit unexpectedly while “{name}” had unsaved changes.	{app} se neočekivano zatvorio dok je „{name}” imao nesačuvane promjene.
 	Recover unsaved changes from {when}?	Oporaviti nesačuvane promjene od {when}?
 	The project had not been saved yet.	Projekat još nije bio sačuvan.
 	{n} sessions have unsaved changes:	Sesije s nesačuvanim promjenama: {n}
@@ -478,8 +468,6 @@
 	A cut sequence with transitions, effects and music	Montirana sekvenca s prijelazima, efektima i muzikom
 	Bars and Tone	Trake i ton
 	SMPTE HD bars with 1 kHz reference tone	SMPTE HD trake s referentnim tonom 1 kHz
-	Community	Zajednica
-	Join us on Discord	Pridružite nam se na Discordu
 	OMF Export Settings	Postavke izvoza OMF
 	AAF Export Settings	Postavke izvoza AAF
 	OMF Title:	OMF naslov:
@@ -984,7 +972,7 @@
 	Font family	Porodica fonta
 	Label Colors	Boje oznaka
 	Decoded frames held for the monitors and thumbnails: {used} of {budget}.	Dekodirane sličice zadržane za monitore i sličice: {used} od {budget}.
-	FilmCraft keeps the rest of the RAM free for other applications.	FilmCraft ostavlja ostatak RAM-a slobodnim za druge aplikacije.
+	{app} keeps the rest of the RAM free for other applications.	{app} ostavlja ostatak RAM-a slobodnim za druge aplikacije.
 	not available in this session	nije dostupno u ovoj sesiji
 	Currently: {loc} — {files} file(s), {size}	Trenutno: {loc} — datoteka: {files}, {size}
 	 ({ch} output channels)	 ({ch} izlaznih kanala)
@@ -1096,7 +1084,7 @@
 	Video Frame	Video sličica
 	Pin To	Prikvači uz
 	Pinned Edges	Prikvačene ivice
-	FilmCraft Graphics Template	Grafički predložak FilmCrafta
+	{app} Graphics Template	Grafički predložak {app}a
 	{n} Font	{n} font
 	{n} Size	{n} veličina
 	{n} Color	{n} boja
@@ -1106,7 +1094,7 @@
 	Export As Motion Graphics Template	Izvezi kao predložak animirane grafike
 	Category:	Kategorija:
 	Editable properties:	Svojstva koja se mogu uređivati:
-	Saved as a FilmCraft graphics template (.fcgt) in your templates folder.	Sačuvano kao grafički predložak FilmCrafta (.fcgt) u vašem folderu predložaka.
+	Saved as a {app} graphics template (.fcgt) in your templates folder.	Sačuvano kao grafički predložak {app}a (.fcgt) u vašem folderu predložaka.
 	Exported graphics template to {path}	Grafički predložak izvezen u {path}
 	Replace Fonts in Projects	Zamijeni fontove u projektima
 	Fonts used in the project:	Fontovi korišteni u projektu:
@@ -1475,7 +1463,7 @@
 	Center of Sphere	Središte sfere
 	Cents	Centi
 	Change to Color	Promijeni u boju
-	Changes are copied in the background a moment after each edit. If FilmCraft quits unexpectedly, they are offered the next time it starts.	Promjene se kopiraju u pozadini trenutak nakon svake izmjene. Ako se FilmCraft neočekivano zatvori, nude se pri sljedećem pokretanju.
+	Changes are copied in the background a moment after each edit. If {app} quits unexpectedly, they are offered the next time it starts.	Promjene se kopiraju u pozadini trenutak nakon svake izmjene. Ako se {app} neočekivano zatvori, nude se pri sljedećem pokretanju.
 	Channel	Kanal
 	Channel Blur	Zamućenje kanala
 	Channel Mix	Miks kanala
@@ -1846,7 +1834,7 @@
 	Hard Limiter	Tvrdi limiter
 	Hard Mix	Tvrdo miješanje
 	Hardware decoding	Hardversko dekodiranje
-	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API or NVDEC for H.264 and HEVC on Linux) for the streams it supports, and FilmCraft's own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Hardversko dekodiranje: Automatski koristi video dekoder sistema (VideoToolbox na macOS-u, Media Foundation na Windowsu, VA-API ili NVDEC za H.264 i HEVC na Linuxu) za tokove koje podržava, a FilmCraftov vlastiti dekoder za sve ostalo ili ako hardver zakaže. Mediji koji su već otvoreni zadržavaju svoj dekoder dok se ponovo ne otvore.
+	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API or NVDEC for H.264 and HEVC on Linux) for the streams it supports, and {app}'s own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Hardversko dekodiranje: Automatski koristi video dekoder sistema (VideoToolbox na macOS-u, Media Foundation na Windowsu, VA-API ili NVDEC za H.264 i HEVC na Linuxu) za tokove koje podržava, a {app}ov vlastiti dekoder za sve ostalo ili ako hardver zakaže. Mediji koji su već otvoreni zadržavaju svoj dekoder dok se ponovo ne otvore.
 	Head Size	Veličina glave
 	Heart	Srce
 	Height	Visina
@@ -2118,7 +2106,7 @@
 	Night	Noć
 	No Motion	Bez pokreta
 	No Scroll	Bez pomjeranja
-	No plugins are installed. Changes will take effect the next time you start FilmCraft.	Nema instaliranih dodataka. Promjene će stupiti na snagu pri sljedećem pokretanju FilmCrafta.
+	No plugins are installed. Changes will take effect the next time you start {app}.	Nema instaliranih dodataka. Promjene će stupiti na snagu pri sljedećem pokretanju {app}a.
 	Noise	Šum
 	Noise & Grain	Šum i zrno
 	Noise (Legacy)	Šum (naslijeđeno)
@@ -2549,7 +2537,7 @@
 	Template Properties	Svojstva predloška
 	Text Animator	Animator teksta
 	Text Color	Boja teksta
-	The media cache holds render previews of unsaved projects and other files FilmCraft can recreate. Deleting them is always safe; FilmCraft rebuilds them as needed.	Keš medija sadrži preglede iscrtavanja nesačuvanih projekata i druge datoteke koje FilmCraft može ponovo kreirati. Njihovo brisanje je uvijek sigurno; FilmCraft ih ponovo gradi po potrebi.
+	The media cache holds render previews of unsaved projects and other files {app} can recreate. Deleting them is always safe; {app} rebuilds them as needed.	Keš medija sadrži preglede iscrtavanja nesačuvanih projekata i druge datoteke koje {app} može ponovo kreirati. Njihovo brisanje je uvijek sigurno; {app} ih ponovo gradi po potrebi.
 	Thickness	Debljina
 	Tile Gradient	Popločaj gradijent
 	Tilt	Nagib
@@ -2746,7 +2734,7 @@
 	System Compatibility Report	Izvještaj o kompatibilnosti sistema
 	no GPU adapter: the CPU compositor is used	nema GPU adaptera: koristi se CPU kompozitor
 	Avid Log Exchange	Avid Log Exchange
-	FilmCraft Project	FilmCraft projekat
+	{app} Project	{app} projekat
 	{name} Selection.fcproj	{name} odabir.fcproj
 	{name} (Simplified)	{name} (pojednostavljeno)
 	Find in:	Pronađi u:
@@ -2886,7 +2874,7 @@
 	Start Queue	Pokreni red
 	Stop	Zaustavi
 	Clear Finished	Očisti završene
-	Not supported by FilmCraft's encoders yet	FilmCraftovi koderi to još ne podržavaju
+	Not supported by {app}'s encoders yet	{app}ovi koderi to još ne podržavaju
 	Sequence name	Naziv sekvence
 	Folder	Folder
 	Preset	Unaprijed postavljeno
@@ -2976,9 +2964,8 @@
 	Drag a clip to slide it between its neighbours.	Prevucite klip da ga kližete između susjednih.
 	Drag to scroll the timeline.	Prevucite za pomjeranje vremenske linije.
 	Click to zoom in; Opt-click to zoom out.	Kliknite za uvećanje; Opt-klik za umanjenje.
-	FilmCraft hit an error	FilmCraft je naišao na grešku
+	{app} hit an error	{app} je naišao na grešku
 	Details: {path}	Detalji: {path}
-	Opened {url}	Otvoreno: {url}
 	(empty)	(prazno)
 	Step Back 1 Frame	Korak unazad 1 sličica
 	Step Forward 1 Frame	Korak naprijed 1 sličica
@@ -3536,8 +3523,8 @@
 	Composite in Linear Color	Kompozit u linearnoj boji
 	Auto Tone Map Media (HDR and log into SDR)	Automatsko tonsko mapiranje medija (HDR i log u SDR)
 	Configure…	Podesi…
-	Not supported in FilmCraft yet	Još nije podržano u FilmCraftu
-	FilmCraft always composites in linear light	FilmCraft uvijek kompozitira u linearnom svjetlu
+	Not supported in {app} yet	Još nije podržano u {app}u
+	{app} always composites in linear light	{app} uvijek kompozitira u linearnom svjetlu
 	Loop marked range	Ponavljaj označeni raspon
 	Play Source	Reprodukuj izvor
 	Source Play/Stop	Reprodukuj/zaustavi izvor
@@ -3594,7 +3581,6 @@
 	Opens in your web browser: {url}	Otvara se u vašem web pregledniku: {url}
 	Saves this session's log and shows it in your file manager.	Čuva zapisnik ove sesije i prikazuje ga u upravitelju datoteka.
 	Shows a report on this computer.	Prikazuje izvještaj o ovom računaru.
-	Shows the version, community links and credits in a FilmCraft window.	Prikazuje verziju, veze zajednice i zasluge u FilmCraft prozoru.
 	Couldn't open your web browser	Nije moguće otvoriti vaš web preglednik
 	Open this address in your browser yourself:	Sami otvorite ovu adresu u svom pregledniku:
 	The control server is disabled: FILMCRAFT_CONTROL_TOKEN must contain 64 random hex characters (see docs/control-protocol.md)	Kontrolni server je onemogućen: FILMCRAFT_CONTROL_TOKEN mora sadržavati 64 nasumična heksadecimalna znaka (pogledajte docs/control-protocol.md)
@@ -3612,9 +3598,9 @@
 	Open a sequence to search its graphics	Otvorite sekvencu da pretražite njene grafike
 	No text graphics in this sequence. Add text with the Type tool.	U ovoj sekvenci nema tekstualnih grafika. Dodajte tekst alatom za tekst.
 	No matching text.	Nema odgovarajućeg teksta.
-	H.265 (HEVC) needs a hardware encoder (NVENC on NVIDIA GPUs, VideoToolbox on macOS); none was found on this machine, and FilmCraft has no software H.265 encoder yet. Choose H.264 or ProRes instead.	H.265 (HEVC) zahtijeva hardverski enkoder (NVENC na NVIDIA GPU-ovima, VideoToolbox na macOS-u); na ovom računaru nije pronađen nijedan, a FilmCraft još nema softverski H.265 enkoder. Umjesto toga odaberite H.264 ili ProRes.
-	AV1 needs a hardware encoder; none was found on this machine, and FilmCraft has no software AV1 encoder yet.	AV1 zahtijeva hardverski enkoder; na ovom računaru nije pronađen nijedan, a FilmCraft još nema softverski AV1 enkoder.
-	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API for H.264 and HEVC on Linux) for the streams it supports, and FilmCraft's own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Hardversko dekodiranje: Automatski koristi video dekoder sistema (VideoToolbox na macOS-u, Media Foundation na Windowsu, VA-API za H.264 i HEVC na Linuxu) za tokove koje podržava, a FilmCraftov vlastiti dekoder za sve ostalo ili ako hardver zakaže. Mediji koji su već otvoreni zadržavaju svoj dekoder dok se ponovo ne otvore.
+	H.265 (HEVC) needs a hardware encoder (NVENC on NVIDIA GPUs, VideoToolbox on macOS); none was found on this machine, and {app} has no software H.265 encoder yet. Choose H.264 or ProRes instead.	H.265 (HEVC) zahtijeva hardverski enkoder (NVENC na NVIDIA GPU-ovima, VideoToolbox na macOS-u); na ovom računaru nije pronađen nijedan, a {app} još nema softverski H.265 enkoder. Umjesto toga odaberite H.264 ili ProRes.
+	AV1 needs a hardware encoder; none was found on this machine, and {app} has no software AV1 encoder yet.	AV1 zahtijeva hardverski enkoder; na ovom računaru nije pronađen nijedan, a {app} još nema softverski AV1 enkoder.
+	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API for H.264 and HEVC on Linux) for the streams it supports, and {app}'s own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Hardversko dekodiranje: Automatski koristi video dekoder sistema (VideoToolbox na macOS-u, Media Foundation na Windowsu, VA-API za H.264 i HEVC na Linuxu) za tokove koje podržava, a {app}ov vlastiti dekoder za sve ostalo ili ako hardver zakaže. Mediji koji su već otvoreni zadržavaju svoj dekoder dok se ponovo ne otvore.
 
 # Export: H.264 High 10 and all-intra (#1221).
 	High 10	High 10

@@ -61,7 +61,7 @@ fn send(method: &str, params: Value) -> Pin<Box<dyn Future<Output = Value>>> {
     let (req, rx) = ControlRequest::new(method, params);
     let sent = TX.with(|t| t.borrow().as_ref().map(|tx| tx.send(req).is_ok()).unwrap_or(false));
     if !sent {
-        return Box::pin(async { json!({"ok": false, "error": "FilmCraft is not running yet"}) });
+        return Box::pin(async { json!({"ok": false, "error": "the app is not running yet"}) });
     }
     crate::repaint();
     Box::pin(wait(rx))

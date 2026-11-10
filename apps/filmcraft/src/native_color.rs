@@ -29,7 +29,7 @@ impl Drop for ColorSession {
         // NSColorPanel is shared. An older draft must never close a newer draft's panel.
         if self.owns_panel() {
             if let Err(error) = (self.text_menu)(false) {
-                log::warn!("Cannot restore FilmCraft Edit menu: {error}");
+                log::warn!("Cannot restore the Edit menu: {error}");
             }
             self.panel.orderOut(None);
         }
