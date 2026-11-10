@@ -768,7 +768,8 @@ fn model_menu(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
     let current = p.model.as_deref().unwrap_or_default();
     let name = p.models.iter().find(|m| m.id == current).map_or(current, |m| m.name.as_str());
     let resp = ui.small_button(name).on_hover_text(tl!("Model"));
-    egui::Popup::menu(&resp).show(|ui| {
+    // The footer sits at the bottom edge: the menu opens upward.
+    egui::Popup::menu(&resp).align(egui::RectAlign::TOP_END).show(|ui| {
         ui.set_max_width(300.0);
         for m in &p.models {
             if ui.selectable_label(m.id == current, &m.name).clicked() && m.id != current {
