@@ -171,7 +171,7 @@ impl Bridge {
 /// picked or dropped.
 fn deliver_open(bridge: &Bridge, name: &str, data: &FileData) {
     let FileData::Bytes(array) = data else {
-        return rejected_open("FilmCraft reads bytes, not a File".to_string());
+        return rejected_open("the app reads bytes, not a File".to_string());
     };
     // The data's own length, as a number: a 4 GiB view must not wrap to 0 and pass the check.
     let len = data.size() as u64;
