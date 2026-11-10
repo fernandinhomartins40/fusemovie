@@ -117,6 +117,7 @@ pub const UI_COMMANDS: &[UiCommand] = &[
     uic!("view.theme.medium", "Dark", ["View", "Appearance"], None),
     uic!("view.theme.light", "Light", ["View", "Appearance"], None),
     uic!("view.appearanceMode.next", "Next Appearance Mode", ["View", "Appearance"], None),
+    uic!("window.codex", "Codex", ["Window"], None),
     uic!("window.workspace.editing", "Editing", ["Window", "Workspaces"], Some("Alt+Shift+1")),
     uic!("window.workspace.assembly", "Assembly", ["Window", "Workspaces"], Some("Alt+Shift+2")),
     uic!("window.workspace.color", "Color", ["Window", "Workspaces"], Some("Alt+Shift+3")),
@@ -509,6 +510,10 @@ pub fn invoke_command(app: &mut FilmcraftApp, ctx: &egui::Context, id: &str, mut
         "app.checkForUpdates" => {
             let _ = crate::updates_ui::check(app);
             return Ok(serde_json::Value::Null);
+        }
+        "window.codex" => {
+            crate::codex_panel::toggle(app);
+            return Ok(json!({"open": crate::codex_panel::is_open(app)}));
         }
         "app.about" => {
             app.dialog = Some(crate::Dialog::About);

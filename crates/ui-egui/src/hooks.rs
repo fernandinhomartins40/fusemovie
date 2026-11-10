@@ -96,6 +96,9 @@ pub struct HostHooks {
     /// Files or an image on the system clipboard, for Paste in the Timeline and the Project panel
     /// (#611). Without it Paste only pastes clips copied in FilmCraft.
     pub clipboard_media: Option<Box<dyn FnMut() -> Option<ClipboardMedia>>>,
+    /// Window › Codex: starts the Codex backend (the desktop app runs `codex app-server`). Without
+    /// it the chat says Codex is not available.
+    pub codex: Option<crate::codex_panel::CodexStartFn>,
 }
 
 /// What [`HostHooks::clipboard_media`] found on the system clipboard.

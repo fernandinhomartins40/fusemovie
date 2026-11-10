@@ -41,6 +41,7 @@ impl FilmcraftApp {
             audio: None,
             scrub: Default::default(),
             hooks: HostHooks::default(),
+            codex: Default::default(),
             // Unsaved changes left by a session that died are offered first thing.
             dialog: recovery.then_some(Dialog::Recovery),
             updates_rt: Default::default(),
@@ -327,6 +328,7 @@ impl FilmcraftApp {
         self.advance_playback(ctx);
         self.advance_source_playback(ctx);
         self.poll_jobs(ctx);
+        crate::codex_panel::poll(self);
         capture::drain(self, ctx);
         capture::request_hidden_paint(self, ctx);
     }

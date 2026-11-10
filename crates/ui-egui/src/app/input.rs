@@ -16,7 +16,10 @@ impl FilmcraftApp {
         let dropped = ctx.input(|i| i.raw.dropped_files.clone());
         if !dropped.is_empty() {
             let pointer = self.drop_pointer(ctx, egui::ViewportId::ROOT, None);
-            self.import_dropped(ctx, &dropped, pointer.map(|p| (p, egui::ViewportId::ROOT)));
+            // files dropped on the Codex chat are its attachments, not imports
+            if !crate::codex_panel::take_drop(self, &dropped, pointer) {
+                self.import_dropped(ctx, &dropped, pointer.map(|p| (p, egui::ViewportId::ROOT)));
+            }
         }
         for files in std::mem::take(&mut self.window_files) {
             // Only the Timeline places files at the pointer; elsewhere they go to the bin.

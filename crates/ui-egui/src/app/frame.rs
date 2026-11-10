@@ -67,7 +67,10 @@ impl FilmcraftApp {
         let status_h = if self.ui.show_status_bar { 20.0 } else { 0.0 };
         let body = egui::Rect::from_min_max(egui::pos2(full.min.x + 1.0, header.max.y + 1.0), egui::pos2(full.max.x - 1.0, full.max.y - status_h - 2.0));
         match self.ui.mode {
-            state::Mode::Edit => self.dock_area(ui, body),
+            state::Mode::Edit => {
+                let body = crate::codex_panel::show_classic(self, ui, body);
+                self.dock_area(ui, body)
+            }
             state::Mode::Import => panels::import_mode::show(self, ui, body),
             state::Mode::Export => panels::export_mode::show(self, ui, body),
         }

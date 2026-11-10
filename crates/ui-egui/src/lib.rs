@@ -43,6 +43,7 @@ pub mod brand;
 pub mod calc;
 pub mod capture;
 mod cjk;
+pub mod codex_panel;
 pub mod control;
 pub mod crash;
 pub mod credits;
@@ -206,6 +207,8 @@ pub struct FilmcraftApp {
     /// Audio during scrubbing (#211).
     pub scrub: scrub::ScrubAudio,
     pub hooks: HostHooks,
+    /// Window › Codex: the chat with Codex ([`codex_panel`]).
+    pub codex: codex_panel::CodexPanel,
     pub dialog: Option<Dialog>,
     pub(crate) updates_rt: updates_ui::Runtime,
     pub file_dialogs: panels::file_dialogs::FileDialogState,
