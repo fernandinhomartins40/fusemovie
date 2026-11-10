@@ -199,7 +199,7 @@ mod tests {
         let mut s = filmcraft_engine::Session::default();
         s.execute("file.openDemoProject", serde_json::json!({})).unwrap();
         s.prefs.audio.scrub_audio = scrub_audio;
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         let fill = Arc::new(Mutex::new(None));
         app.audio = Some(Box::new(Out { fill: fill.clone() }));
         (app, fill)

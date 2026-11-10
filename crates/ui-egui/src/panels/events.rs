@@ -240,7 +240,7 @@ mod tests {
     /// its time left shuffled the line.
     #[test]
     fn a_running_jobs_row_changes_once_a_second() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let job = filmcraft_engine::Job { id: 7, label: "Proxies".into(), progress: Default::default(), result: Default::default() };
         let p = job.progress.clone();
         p.total.store(100, Ordering::Relaxed);

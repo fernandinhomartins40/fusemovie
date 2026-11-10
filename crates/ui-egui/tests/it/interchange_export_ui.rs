@@ -18,7 +18,7 @@ struct Driver {
 impl Driver {
     fn new(session: Session, save_to: std::path::PathBuf) -> Self {
         let (tx, rx) = channel();
-        let mut app = FilmcraftApp::new(session).with_control(rx);
+        let mut app = FilmcraftApp::new_classic(session).with_control(rx);
         app.hooks.pick_save_as = Some(Box::new(move |_, exts, suggested| {
             assert!(suggested.ends_with(&format!(".{}", exts[0])), "{suggested}");
             Some(save_to.join(suggested).to_string_lossy().into_owned())

@@ -9,7 +9,7 @@ use filmcraft_engine::Session;
 
 /// App with a default session, for capture-state unit tests.
 fn app() -> FilmcraftApp {
-    FilmcraftApp::new(Session::default())
+    FilmcraftApp::new_classic(Session::default())
 }
 
 /// A fixed 800×600, 1 px/pt capture identity for the app's current document with no focus.

@@ -44,8 +44,9 @@ pub use schema::{
 
 /// Version of the preferences file layout ([`crate::autosave::Preferences::version`]).
 /// v1: Auto Save, Audio (mixer automation), Playback (pre/postroll), Trim, Media (proxies), guides,
-/// Essential Sound presets. v2: every Settings category.
-pub const PREFS_VERSION: u32 = 2;
+/// Essential Sound presets. v2: every Settings category. v3: the Studio theme becomes the dark theme
+/// once (`schema::migrate`).
+pub const PREFS_VERSION: u32 = 3;
 const SPEAKERS: &[(&str, &str)] = &[("on", "Label speakers"), ("off", "Don't label speakers")];
 const LANGUAGES: &[(&str, &str)] = &[
     ("en", "English"),

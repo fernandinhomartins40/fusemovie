@@ -116,6 +116,9 @@ pub const UI_COMMANDS: &[UiCommand] = &[
     uic!("view.theme.dark", "Darkest", ["View", "Appearance"], None),
     uic!("view.theme.medium", "Dark", ["View", "Appearance"], None),
     uic!("view.theme.light", "Light", ["View", "Appearance"], None),
+    uic!("view.theme.studio", "Studio", ["View", "Appearance"], None),
+    // the Studio shell (`crate::studio`) or the docking layout it replaced
+    uic!("window.classicLayout", "Classic Layout", ["Window"], None),
     uic!("view.appearanceMode.next", "Next Appearance Mode", ["View", "Appearance"], None),
     uic!("window.workspace.editing", "Editing", ["Window", "Workspaces"], Some("Alt+Shift+1")),
     uic!("window.workspace.assembly", "Assembly", ["Window", "Workspaces"], Some("Alt+Shift+2")),
@@ -622,6 +625,10 @@ pub fn invoke_command(app: &mut FilmcraftApp, ctx: &egui::Context, id: &str, mut
         }
         _ => {}
     }
+    if id == "window.classicLayout" {
+        crate::studio::toggle_classic(app);
+        return Ok(json!({"classic": app.studio.classic}));
+    }
     if id == "view.appearanceMode.next" {
         crate::panels::settings::cycle_appearance(app, ctx);
         return Ok(json!({"appearanceMode": app.session.prefs.appearance.appearance_mode}));
@@ -938,6 +945,7 @@ pub fn menu_items(app: &FilmcraftApp) -> Vec<MenuItem> {
             "app.language.polish" => it.checked = Some(app.ui.language == crate::i18n::Language::Pl),
             "app.language.swedish" => it.checked = Some(app.ui.language == crate::i18n::Language::Sv),
             "app.language.turkish" => it.checked = Some(app.ui.language == crate::i18n::Language::Tr),
+            "window.classicLayout" => it.checked = Some(app.studio.classic),
             _ => {}
         }
         if let Some(on) = engine_toggle(&app.session, &it.id) {
@@ -1241,6 +1249,26 @@ pub fn menu_bar(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     if let Some(id) = clicked {
         let _ = invoke(app, &ctx, &id, json!({}));
     }
+}
+
+/// The whole menu bar as one menu (the Studio shell's ☰): File … Help as submenus, drawn by the
+/// menu bar's code. Returns the command clicked; the caller runs it after the popup closes.
+pub fn menu_tree(app: &mut FilmcraftApp, ui: &mut egui::Ui) -> Option<String> {
+    ui.ctx().data_mut(|d| d.insert_temp(egui::Id::unique("interface-language"), app.ui.language));
+    crate::theme::menu_style(ui.style_mut());
+    let items = menu_items_with_focus(app, ui.ctx());
+    let labels = app.session.prefs.labels.clone();
+    let mut clicked = None;
+    ui.set_min_width(220.0);
+    for top in MENUS {
+        let mine: Vec<&MenuItem> = items.iter().filter(|i| i.path.first().map(String::as_str) == Some(top)).collect();
+        let r = ui.menu_button(app.ui.language.tr(top), |ui| {
+            ui.set_min_width(260.0);
+            menu_level(ui, &mine, 1, &mut clicked, &mut app.auto, &labels);
+        });
+        app.auto.add(&format!("menu.{top}"), r.response.rect, top);
+    }
+    clicked
 }
 
 /// Like a native menu bar (Windows, macOS): while one top-level menu is open, hovering another
@@ -1566,7 +1594,7 @@ mod tests {
     fn hovering_another_title_switches_the_open_menu() {
         use egui_kittest::{Harness, kittest::Queryable};
 
-        let app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let mut harness = Harness::builder().with_size(egui::vec2(1200.0, 700.0)).build_ui_state(|ui, app| menu_bar(app, ui), app);
         // the app's fonts, which draw the macOS shortcut symbols (⇧⌘S) egui's default fonts lack
         crate::theme::install(&harness.ctx, &harness.state().tokens);

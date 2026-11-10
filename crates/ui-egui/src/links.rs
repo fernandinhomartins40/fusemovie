@@ -99,7 +99,7 @@ mod tests {
         use std::rc::Rc;
         let opened: Rc<RefCell<Vec<String>>> = Rc::default();
         let rec = opened.clone();
-        let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.hooks.open_url = Some(Box::new(move |u: &str| {
             rec.borrow_mut().push(u.to_string());
             Ok(())
@@ -121,7 +121,7 @@ mod tests {
     /// The failed-link dialog shows the address until it is closed, and Copy copies it.
     #[test]
     fn failed_link_dialog_keeps_the_address_until_closed() {
-        let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.hooks.open_url = Some(Box::new(|_: &str| Err("no browser".into())));
         let ctx = egui::Context::default();
         let time = std::cell::Cell::new(0.0);
@@ -167,7 +167,7 @@ mod tests {
     /// the app and says what it does.
     #[test]
     fn help_menu_has_no_upstream_links() {
-        let app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let help: Vec<String> =
             crate::menus::menu_items(&app).into_iter().filter(|it| it.path.first().map(String::as_str) == Some("Help")).map(|it| it.id).collect();
         for gone in ["help.discord", "help.website", "help.appPage", "help.github", "help.reportIssue", "help.filmcraftHelp", "app.checkForUpdates"] {

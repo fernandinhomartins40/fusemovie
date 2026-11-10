@@ -21,7 +21,7 @@ impl Driver {
         let mut session = Session::default();
         session.execute("file.openDemoProject", json!({})).unwrap();
         let (tx, rx) = channel();
-        let app = FilmcraftApp::new(session);
+        let app = FilmcraftApp::new_classic(session);
         let app = if isolated { app.with_control_input_only(rx) } else { app.with_control(rx) };
         let mut driver = Self { h: Harness::builder().with_size(vec2(1400.0, 900.0)).build_eframe(move |_| app), tx };
         driver.frames(4, true);

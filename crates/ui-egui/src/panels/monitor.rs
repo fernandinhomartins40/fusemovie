@@ -1380,7 +1380,7 @@ mod tests {
 
     #[test]
     fn loop_command_turns_the_monitor_loop_state_on_and_off() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ctx = egui::Context::default();
         for (source, params) in [(false, json!({"monitor": "program"})), (true, json!({"monitor": "source"}))] {
             assert!(!transport_is_lit("playback.loop", false, transport_loop_on(&app, source)));

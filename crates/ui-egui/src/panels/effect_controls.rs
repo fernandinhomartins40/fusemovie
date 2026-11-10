@@ -1635,7 +1635,7 @@ mod drag_undo_tests {
         let mut s = filmcraft_engine::Session::default();
         s.execute("file.openDemoProject", json!({})).unwrap();
         let clip = s.active_sequence().unwrap().video_tracks[0].items[0].id.0;
-        let mut app = crate::FilmcraftApp::new(s);
+        let mut app = crate::FilmcraftApp::new_classic(s);
         let ctx = egui::Context::default();
         let opacity = |app: &crate::FilmcraftApp| {
             let q = app.session.active_sequence().unwrap();
@@ -1676,7 +1676,7 @@ mod drag_undo_tests {
         let mut s = filmcraft_engine::Session::default();
         s.execute("file.openDemoProject", json!({})).unwrap();
         let clip = s.active_sequence().unwrap().video_tracks[0].items[0].id.0;
-        let mut app = crate::FilmcraftApp::new(s);
+        let mut app = crate::FilmcraftApp::new_classic(s);
         let ctx = egui::Context::default();
         let scale = |app: &crate::FilmcraftApp| {
             let q = app.session.active_sequence().unwrap();
@@ -1731,7 +1731,7 @@ mod lane_tests {
         s.execute("timeline.select", json!({"clips": [clip.0]})).unwrap();
         s.execute("effects.toggleAnimation", json!({"clip": clip.0, "effect": "motion", "param": "scale"})).unwrap();
         let seq = s.state.active_sequence.unwrap();
-        let mut app = crate::FilmcraftApp::new(s);
+        let mut app = crate::FilmcraftApp::new_classic(s);
         let ctx = context();
         for duration in [0, -5 * filmcraft_time::TICKS_PER_SECOND] {
             let project = std::sync::Arc::make_mut(&mut app.session.project);
@@ -1832,7 +1832,7 @@ mod graph_drag_tests {
             a.interp = Interpolation::Bezier;
             b.interp = Interpolation::Bezier;
             it.effects.iter_mut().find(|e| e.effect == "motion").unwrap().params.insert(param.into(), Param { value: from, keyframes: vec![a, b] });
-            let app = FilmcraftApp::new(session);
+            let app = FilmcraftApp::new_classic(session);
             let ctx = egui::Context::default();
             crate::theme::install(&ctx, &app.tokens);
             Self { app, ctx, clip, time: 0.0, param }
@@ -2035,7 +2035,7 @@ mod frame_hold_tests {
             (it.frame_hold, it.hold_filters) = (Some(it.source_in), hold_filters);
         }
         let index = it.effects.iter().position(|e| e.effect == "parametric_eq").unwrap();
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         app.ui.audio_fx_editors.push(FxTarget::Clip { clip: a.0, index });
         app
     }
@@ -2095,7 +2095,7 @@ mod uniform_scale_tests {
         }
         s.execute("effects.setParam", json!({"clip": clip.0, "effect": effect, "param": "uniform_scale", "value": uniform})).unwrap();
         s.execute("timeline.select", json!({"clips": [clip.0]})).unwrap();
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         let ctx = egui::Context::default();
         crate::theme::install(&ctx, &app.tokens);
         let rect = Rect::from_min_size(pos2(0.0, 0.0), vec2(900.0, 1600.0));
@@ -2153,7 +2153,7 @@ mod uniform_scale_tests {
         }
         s.execute("effects.setParam", json!({"clip": clip.0, "effect": "motion", "param": "uniform_scale", "value": uniform})).unwrap();
         s.execute("timeline.select", json!({"clips": [clip.0]})).unwrap();
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         let effects = |app: &FilmcraftApp| app.session.active_sequence().unwrap().find_item(clip).unwrap().1.effects.clone();
         let idx = effects(&app).iter().position(|e| e.effect == "motion").unwrap();
         let second = |app: &FilmcraftApp| effects(app)[idx].params["scale_width"].keyframes[1].clone();
@@ -2208,7 +2208,7 @@ mod uniform_scale_tests {
         let uniform = |on: bool| json!({"clip": clip.0, "effect": "motion", "param": "uniform_scale", "value": on});
         s.execute("effects.setParam", uniform(false)).unwrap();
         s.execute("timeline.select", json!({"clips": [clip.0]})).unwrap();
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         let effects = |app: &FilmcraftApp| app.session.active_sequence().unwrap().find_item(clip).unwrap().1.effects.clone();
         let idx = effects(&app).iter().position(|e| e.effect == "motion").unwrap();
         let times = |app: &FilmcraftApp, param: &str| effects(app)[idx].params[param].keyframes.iter().map(|k| k.time).collect::<Vec<_>>();

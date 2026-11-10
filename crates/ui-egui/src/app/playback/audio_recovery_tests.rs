@@ -44,7 +44,7 @@ fn forward_shuttle_playback_keeps_audio_enabled() {
 
     let mut session = Session::default();
     session.execute("file.newSequence", json!({"width":16,"height":16})).unwrap();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let starts = Arc::new(AtomicUsize::new(0));
     app.audio = Some(Box::new(Device { ready: true, starts: starts.clone(), reading: Some(0) }));
     app.play(2.0);
@@ -102,7 +102,7 @@ fn maintain_pitch_shuttling_controls_the_samples_sent_to_the_device() {
     let bytes: Arc<[u8]> = filmcraft_engine::previews::write_wav_f32(&inter, 48_000).into();
     let item = filmcraft_engine::commands::import_bytes(&mut session, "/shuttle-tone.wav", bytes, None).unwrap();
     session.execute("timeline.place", json!({"item":item.0,"audioTrack":"A1","seconds":0.0})).unwrap();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let samples = Arc::new(Mutex::new(Vec::new()));
     app.audio = Some(Box::new(Capture(samples.clone())));
     let mut normal = None;
@@ -136,7 +136,7 @@ fn changing_pitch_preference_restarts_audio_at_the_current_playhead() {
     let mut session = Session::default();
     session.execute("file.newSequence", json!({"width":16,"height":16})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let starts = Arc::new(AtomicUsize::new(0));
     app.audio = Some(Box::new(Device { ready: true, starts: starts.clone(), reading: Some(0) }));
     app.session.prefs.audio_hardware.default_output = "available".into();
@@ -171,7 +171,7 @@ fn changing_hardware_recovers_wall_clock_playback_without_rewinding() {
     let mut session = Session::default();
     session.execute("file.newSequence", json!({"width":16,"height":16})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let starts = Arc::new(AtomicUsize::new(0));
     app.audio = Some(Box::new(Device { ready: false, starts: starts.clone(), reading: Some(0) }));
     app.apply_prefs(&ctx);
@@ -193,7 +193,7 @@ fn a_failed_device_clock_resumes_from_the_displayed_frame() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     app.audio = Some(Box::new(Device { ready: true, starts: Arc::new(AtomicUsize::new(0)), reading: None }));
     let displayed = app.session.sequence_rate().tick_of(48);
     app.session.set_playhead(displayed);
@@ -238,7 +238,7 @@ fn a_restarted_stream_keeps_the_device_clock_and_the_sound() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     app.audio = Some(Box::new(Restartable { reading: None }));
     app.playback.playing = true;
     app.playback.audio_clock = true;
@@ -283,7 +283,7 @@ fn a_lost_output_is_reopened_and_the_sound_returns() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let starts = Arc::new(AtomicUsize::new(0));
     let ticking = Arc::new(AtomicBool::new(true));
     app.audio = Some(Box::new(Reviving { starts: starts.clone(), opens: Arc::new(AtomicBool::new(true)), ticking: ticking.clone() }));
@@ -312,7 +312,7 @@ fn a_device_that_appears_mid_playback_starts_sounding() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
     let ctx = egui::Context::default();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let starts = Arc::new(AtomicUsize::new(0));
     let opens = Arc::new(AtomicBool::new(false));
     app.audio = Some(Box::new(Reviving { starts: starts.clone(), opens: opens.clone(), ticking: Arc::new(AtomicBool::new(true)) }));
@@ -335,7 +335,7 @@ fn a_device_that_appears_mid_playback_starts_sounding() {
 fn only_a_running_transport_has_something_to_stop() {
     let mut session = Session::default();
     session.execute("file.newSequence", json!({"width": 16, "height": 16})).unwrap();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     assert!(!app.transport_running(), "nothing runs in a new project");
     app.playback.playing = true;
     assert!(app.transport_running(), "Program playback runs a transport");
@@ -399,7 +399,7 @@ fn a_scrub_stops_a_text_to_speech_preview_but_not_an_idle_output() {
     let mut session = Session::default();
     session.execute("file.newSequence", json!({"width":16,"height":16})).unwrap();
     session.tts_preview = Some(Arc::new(filmcraft_tts::Audio { samples: vec![0.0; 4800], sample_rate: 48_000 }));
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let stops = Arc::new(AtomicUsize::new(0));
     app.audio = Some(Box::new(Counting(stops.clone())));
     app.stop_for_scrub();

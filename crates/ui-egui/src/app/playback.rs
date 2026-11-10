@@ -324,7 +324,7 @@ mod clock_tests {
     /// the last UI time and then jumping when the next UI pass arrives.
     #[test]
     fn now_applies_the_ui_clock_offset_and_keeps_the_test_override_first() {
-        let mut app = FilmcraftApp::new(Session::default());
+        let mut app = FilmcraftApp::new_classic(Session::default());
         app.ui_clock = 123.0;
         app.ui_clock_offset = Some(1_000.0);
         assert!(app.now() >= 1_000.0, "the captured offset moves the host clock to egui time");
@@ -350,7 +350,7 @@ mod voiceover_playback_tests {
         session.execute("audio.voiceover.settings", json!({"prerollSeconds": 0.0})).unwrap();
         session.prefs.timeline.return_to_beginning = true;
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(session);
+        let mut app = FilmcraftApp::new_classic(session);
         app.audio = None;
         let dur = app.session.active_sequence().map(|q| q.duration()).unwrap();
         let from = app.session.sequence_rate().snap(dur + Tick::from_seconds_f64(60.0));
@@ -379,7 +379,7 @@ mod smooth_playhead_tests {
     fn playing_at(now: f64) -> FilmcraftApp {
         let mut session = Session::default();
         session.execute("file.openDemoProject", json!({})).unwrap();
-        let mut app = FilmcraftApp::new(session);
+        let mut app = FilmcraftApp::new_classic(session);
         app.playback.playing = true;
         app.playback.speed = 1.0;
         app.playback.anchor_tick = Tick::ZERO;
@@ -427,7 +427,7 @@ mod smooth_playhead_tests {
     fn on_the_audio_clock_the_drawn_playhead_never_steps_back() {
         let mut session = Session::default();
         session.execute("file.openDemoProject", json!({})).unwrap();
-        let mut app = FilmcraftApp::new(session);
+        let mut app = FilmcraftApp::new_classic(session);
         let played = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
         app.audio = Some(Box::new(BufferedDevice(played.clone())));
         app.playback.playing = true;

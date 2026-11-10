@@ -803,7 +803,7 @@ mod input_bounds_tests {
 
     /// Create an empty editor session for inspecting queued synthetic input without a window.
     fn app() -> FilmcraftApp {
-        FilmcraftApp::new(filmcraft_engine::Session::default())
+        FilmcraftApp::new_classic(filmcraft_engine::Session::default())
     }
 
     /// Dispatch a control request and fail the test if hostile parameters cause a panic.

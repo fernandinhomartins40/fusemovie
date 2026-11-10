@@ -422,7 +422,7 @@ mod tests {
         crate::i18n::set_current(crate::i18n::Language::Tr);
         let ctx = egui::Context::default();
         let session = filmcraft_engine::Session::default();
-        let mut app = FilmcraftApp::new(session);
+        let mut app = FilmcraftApp::new_classic(session);
         let rect = Rect::from_min_size(pos2(0.0, 0.0), vec2(400.0, 600.0));
         for query in ["IŞIK", "ışık", "Işık"] {
             app.ui.effects_search = query.to_string();
@@ -441,7 +441,7 @@ mod tests {
     #[test]
     fn effects_search_finds_grading_by_its_old_names() {
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let rect = Rect::from_min_size(pos2(0.0, 0.0), vec2(400.0, 600.0));
         let shows = |app: &mut FilmcraftApp, query: &str| {
             app.ui.effects_search = query.to_string();

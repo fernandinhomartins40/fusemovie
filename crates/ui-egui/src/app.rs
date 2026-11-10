@@ -34,6 +34,7 @@ impl FilmcraftApp {
         Self {
             session,
             ui: UiState { language, ..UiState::default() },
+            studio: Default::default(),
             tokens: Tokens::for_kind(ThemeKind::Dark),
             frames,
             playback: Playback { speed: 1.0, ..Default::default() },
@@ -127,6 +128,21 @@ impl FilmcraftApp {
             workspaces,
             menu_workspaces: Default::default(),
         }
+    }
+
+    /// [`Self::new`] with the pre-Studio look: the docking layout (Window ▸ Classic Layout) in
+    /// Darkest unless the session already picked another theme. For the tests written against the
+    /// classic dock, header and status bar (not used by the app).
+    #[doc(hidden)]
+    pub fn new_classic(mut session: Session) -> Self {
+        let a = &mut session.prefs.appearance;
+        if a.dark_theme == "studio" {
+            a.dark_theme = "darkest".into();
+            a.sync_color_theme();
+        }
+        let mut app = Self::new(session);
+        app.studio.classic = true;
+        app
     }
 
     pub fn with_control(mut self, rx: Receiver<ControlRequest>) -> Self {
@@ -550,7 +566,7 @@ mod lifecycle_synthetic_tests {
     #[test]
     fn one_synthetic_step_survives_hidden_logic_callbacks() {
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(Session::default());
+        let mut app = FilmcraftApp::new_classic(Session::default());
         app.synthetic = vec![
             Event::PointerMoved(pos2(10.0, 10.0)),
             Event::PointerMoved(pos2(20.0, 20.0)),
@@ -586,7 +602,7 @@ mod lifecycle_synthetic_tests {
     #[test]
     fn hidden_callbacks_do_not_duplicate_a_step_preserved_in_raw_input() {
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(Session::default());
+        let mut app = FilmcraftApp::new_classic(Session::default());
         app.synthetic =
             vec![Event::Text("once".into()), Event::Key { key: egui::Key::F35, physical_key: None, pressed: false, repeat: false, modifiers: Modifiers::NONE }];
         let mut first = egui::RawInput::default();

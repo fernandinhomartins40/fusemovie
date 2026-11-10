@@ -31,7 +31,7 @@ impl Driver {
         let mut session = Session::default();
         session.execute("file.openDemoProject", json!({})).expect("demo project");
         let (tx, rx) = channel();
-        let mut app = FilmcraftApp::new(session).with_control(rx);
+        let mut app = FilmcraftApp::new_classic(session).with_control(rx);
         let asked: Asked = Arc::default();
         if runner {
             let a = asked.clone();

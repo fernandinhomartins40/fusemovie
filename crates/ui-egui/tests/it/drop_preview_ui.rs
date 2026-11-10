@@ -27,7 +27,7 @@ impl Driver {
         session.execute("file.newSequence", json!({"name": "Drop preview", "width": 1280, "height": 720, "fps": 24})).expect("sequence");
         session.prefs.timeline.clip_mismatch_warning = false;
         let (tx, rx) = channel();
-        let app = FilmcraftApp::new(session).with_control(rx);
+        let app = FilmcraftApp::new_classic(session).with_control(rx);
         let snapshots = std::env::var_os("FILMCRAFT_UI_SNAPSHOT_DIR").map(std::path::PathBuf::from);
         let mut b = Harness::builder().with_size(egui::vec2(1600.0, 980.0)).with_max_steps(10_000);
         if snapshots.is_some() {

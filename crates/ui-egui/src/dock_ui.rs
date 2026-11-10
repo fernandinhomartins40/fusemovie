@@ -27,6 +27,12 @@ fn bodies_id() -> egui::Id {
     area_id().with("bodies")
 }
 
+/// The Studio shell drew `panel` in `rect` this frame (it has no dock area): file drops on the
+/// Timeline find it as they find a docked body.
+pub(crate) fn note_body(ctx: &egui::Context, panel: PanelKind, rect: Rect, layer: egui::LayerId) {
+    ctx.data_mut(|data| data.insert_temp(bodies_id(), vec![(panel, rect, layer)]));
+}
+
 /// Width of the ≡ panel menu button at the end of each tab strip.
 const MENU_W: f32 = 26.0;
 

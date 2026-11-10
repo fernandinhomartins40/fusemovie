@@ -126,7 +126,7 @@ const BIN_OPEN: &[(&str, &str)] = &[("openInPlace", "Open in place"), ("openNewT
 
 const PROJECT_OPEN: &[(&str, &str)] = &[("openNewTab", "Open new tab"), ("openNewWindow", "Open in new window")];
 
-const THEMES: &[(&str, &str)] = &[("darkest", "Darkest"), ("dark", "Dark"), ("light", "Light")];
+const THEMES: &[(&str, &str)] = &[("studio", "Studio"), ("darkest", "Darkest"), ("dark", "Dark"), ("light", "Light")];
 
 pub const APPEARANCE_MODES: &[(&str, &str)] = &[("auto", "Sync with system"), ("dark", "Dark"), ("light", "Light")];
 
@@ -142,7 +142,7 @@ pub const UI_SCALES: &[(&str, &str)] = &[
     ("300", "300%"),
 ];
 
-pub const DARK_THEMES: &[(&str, &str)] = &[("darkest", "Darkest"), ("dark", "Dark")];
+pub const DARK_THEMES: &[(&str, &str)] = &[("studio", "Studio"), ("darkest", "Darkest"), ("dark", "Dark")];
 
 pub const LIGHT_THEMES: &[(&str, &str)] = &[("light", "Light")];
 
@@ -732,6 +732,13 @@ pub fn migrate(v: &mut Value) {
         a.insert("appearanceMode".into(), json!(p.appearance_mode));
         a.insert("darkTheme".into(), json!(p.dark_theme));
         a.insert("lightTheme".into(), json!(p.light_theme));
+    }
+    // v3: the Studio theme arrives as the dark theme, once; a user who picks another later keeps it.
+    if ver < 3 {
+        if let Some(a) = m.get_mut("appearance").and_then(Value::as_object_mut) {
+            a.insert("darkTheme".into(), json!("studio"));
+        }
+        m.insert("version".into(), json!(3));
     }
 }
 

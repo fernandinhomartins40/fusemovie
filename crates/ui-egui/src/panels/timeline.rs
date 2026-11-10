@@ -886,7 +886,7 @@ mod trim_preview_tests {
         let mut s = filmcraft_engine::Session::default();
         s.execute("file.openDemoProject", serde_json::json!({})).unwrap();
         let seq = s.active_sequence().unwrap().clone();
-        (FilmcraftApp::new(s), seq)
+        (FilmcraftApp::new_classic(s), seq)
     }
 
     fn assert_same_media(before: &TrackItem, after: &TrackItem) {
@@ -1040,7 +1040,7 @@ mod waveform_drag_anchor_tests {
         s.execute("file.openDemoProject", serde_json::json!({})).unwrap();
         let seq = s.active_sequence().unwrap().clone();
         let music = seq.audio_tracks.iter().flat_map(|t| &t.items).find(|i| i.name.contains("Ambient")).unwrap().clone();
-        (FilmcraftApp::new(s), seq, music)
+        (FilmcraftApp::new_classic(s), seq, music)
     }
 
     #[test]

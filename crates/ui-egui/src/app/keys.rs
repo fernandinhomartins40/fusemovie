@@ -345,7 +345,7 @@ mod forwarded_key_tests {
     /// A key a floating native window left over runs the main window's bindings.
     #[test]
     fn forwarded_keys_fire_shortcuts() {
-        let mut app = super::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = super::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.bindings = super::menus::bindings(&app);
         app.ui.focused = crate::dock::PanelKind::Timeline;
         let shift_backtick = Event::Key { key: Key::Backtick, physical_key: Some(Key::Backtick), pressed: true, repeat: false, modifiers: Modifiers::SHIFT };
@@ -407,7 +407,7 @@ mod key_repeat_tests {
     }
 
     fn fired(events: Vec<Event>) -> Vec<String> {
-        let mut app = super::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = super::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.bindings = super::menus::bindings(&app);
         app.ui.focused = crate::dock::PanelKind::Timeline;
         let mut input = egui::InputState::default();
@@ -451,7 +451,7 @@ mod exact_modifier_tests {
 
     /// The binding ids one fresh press of `key` with `modifiers` fires, `panel` focused.
     fn fired(panel: PanelKind, key: Key, modifiers: Modifiers) -> Vec<String> {
-        let mut app = super::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = super::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.bindings = super::menus::bindings(&app);
         app.ui.focused = panel;
         let mut input = egui::InputState::default();

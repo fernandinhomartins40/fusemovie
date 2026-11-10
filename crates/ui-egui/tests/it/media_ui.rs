@@ -105,7 +105,7 @@ struct Driver {
 impl Driver {
     fn new(session: Session) -> Self {
         let (tx, rx) = channel();
-        let app = FilmcraftApp::new(session).with_control(rx);
+        let app = FilmcraftApp::new_classic(session).with_control(rx);
         let snapshots = std::env::var_os("FILMCRAFT_UI_SNAPSHOT_DIR").map(PathBuf::from);
         let mut b = Harness::builder().with_size(egui::vec2(1600.0, 980.0)).with_max_steps(10_000);
         if snapshots.is_some() {
@@ -367,7 +367,7 @@ fn link_media_large_lists_and_long_paths_keep_actions_on_screen() {
             s.offline.missing.push(id);
         }
         s.project = Arc::new(p);
-        let mut app = FilmcraftApp::new(s);
+        let mut app = FilmcraftApp::new_classic(s);
         app.ui.link_media = Some(Default::default());
         let mut builder = Harness::builder().with_size(egui::vec2(width, height)).with_max_steps(10_000);
         let snapshots = std::env::var_os("FILMCRAFT_UI_SNAPSHOT_DIR").map(PathBuf::from);
