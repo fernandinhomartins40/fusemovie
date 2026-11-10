@@ -70,6 +70,7 @@ pub mod scrub;
 mod shuttle;
 pub mod source_playback;
 pub mod state;
+mod studio;
 pub mod theme;
 mod theme_favorites;
 pub mod updates_ui;

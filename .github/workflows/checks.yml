@@ -36,7 +36,17 @@ jobs:
         run: cargo clippy -p filmcraft-ui-egui -p filmcraft-automation -p filmcraft -p filmcraft-cli --all-targets -- -D warnings
 
       - name: Studio shell tests
+        env:
+          FUSEMOVIE_SNAPSHOT_DIR: ${{ github.workspace }}/snapshots
         run: cargo test -p filmcraft-ui-egui --lib -- studio home new_doc codex brand updates_ui
+
+      - name: Upload Studio snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-snapshots
+          path: snapshots/
+          if-no-files-found: ignore
 
       - name: Automation tests
         run: cargo test -p filmcraft-automation --lib
