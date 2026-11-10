@@ -29,7 +29,7 @@ impl FilmcraftApp {
             reqs.push((req, now + 3.0));
         }
         for (req, deadline) in reqs {
-            if req.method.starts_with("ui.") && req.method != "ui.screenshot" {
+            if req.method.starts_with("ui.") && !matches!(req.method.as_str(), "ui.screenshot" | "ui.renderPreview") {
                 self.ui_requests.push((req, deadline));
                 ctx.request_repaint();
                 ctx.send_viewport_cmd(egui::ViewportCommand::RequestPaintWhileHidden);
