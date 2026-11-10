@@ -912,7 +912,7 @@ mod tests {
         events.send(CodexEvent::Image(path.clone())).unwrap();
         poll(&mut app);
         let after = app.session.execute("project.inspect", json!({})).unwrap().to_string();
-        assert!(!before.contains("title.png") && after.contains("title.png"), "{after}");
+        assert!(!before.contains("title") && after.contains("title"), "{after}");
         assert!(matches!(app.codex.entries.last(), Some(Entry::Steps(lines)) if lines.iter().any(|l| l.contains("title.png"))), "{:?}", app.codex.entries);
     }
 

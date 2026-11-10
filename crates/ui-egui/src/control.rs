@@ -758,7 +758,7 @@ fn preview_area(frame: (u32, u32), region: Option<&Value>, max: u32) -> Result<(
         None => [0.0, 0.0, fw, fh],
         Some(r) => {
             let n: Vec<f64> = r.as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_default();
-            let [x, y, w, h] = n[..] else { return Err("`region` must be [x, y, width, height] in sequence pixels".into()) };
+            let &[x, y, w, h] = &n[..] else { return Err("`region` must be [x, y, width, height] in sequence pixels".into()) };
             if !(x.is_finite() && y.is_finite() && w.is_finite() && h.is_finite()) {
                 return Err("`region` must be finite numbers".into());
             }
@@ -793,6 +793,9 @@ fn render_preview(app: &FilmcraftApp, p: &Value) -> Result<Value, String> {
         None => app.session.playhead(),
     };
     let img = app.session.try_render_program_at(scale, t).map_err(|e| e.to_string())?;
+    if img.w == 0 || img.h == 0 {
+        return Err("the sequence rendered an empty frame".into());
+    }
     let rgba = img.over_black_rgba8();
     let (iw, ih) = (img.w as f64, img.h as f64);
     let x0 = ((fx * iw).floor() as usize).min(img.w.saturating_sub(1));
