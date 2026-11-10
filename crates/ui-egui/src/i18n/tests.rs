@@ -150,7 +150,7 @@ fn tl_literals_are_plain_strings() {
 /// Every string the interface translates: menu labels and paths (the native macOS app menu
 /// included), `tl!`/`tlf!` literals, and names translated through `i18n::t`.
 fn interface_strings() -> Vec<String> {
-    let app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     let mut out = Vec::new();
     for top in crate::menus::MENUS.into_iter().chain(["Audio"]).chain(crate::menus::NATIVE_APP_MENU) {
         push(&mut out, top);
@@ -199,7 +199,7 @@ fn missing_translations_report() {
 /// and is refused (the interface stays as it was) without one.
 #[test]
 fn chinese_switches_and_persists_or_is_refused_without_a_font() {
-    let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     let ctx = egui::Context::default();
     let r = crate::menus::invoke(&mut app, &ctx, "app.language.chinese", serde_json::json!({}));
     if !chinese_font_available() {
@@ -220,7 +220,7 @@ fn chinese_switches_and_persists_or_is_refused_without_a_font() {
     let prefs = serde_json::to_string(&app.session.prefs).unwrap();
     let mut restarted = filmcraft_engine::Session::default();
     restarted.prefs = serde_json::from_str(&prefs).unwrap();
-    assert_eq!(crate::FilmcraftApp::new(restarted).ui.language, Language::ZhCn);
+    assert_eq!(crate::FilmcraftApp::new_classic(restarted).ui.language, Language::ZhCn);
     crate::menus::invoke(&mut app, &ctx, "app.language.english", serde_json::json!({})).unwrap();
     set_current(Language::En);
 }
@@ -440,7 +440,7 @@ fn dynamic_names() -> Vec<String> {
         push(&mut out, &p.description);
     }
     // every command (Keyboard Shortcuts dialog, History panel) and the shortcut contexts
-    let app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     for c in app.session.shortcuts.commands() {
         push(&mut out, &c.label);
         push(&mut out, &c.category);
@@ -648,11 +648,11 @@ fn system_language_preference_uses_the_host_languages() {
     let ctx = egui::Context::default();
     let session = filmcraft_engine::Session::default();
     assert_eq!(session.prefs.general.interface_language, "system");
-    let mut app = crate::FilmcraftApp::new(session);
+    let mut app = crate::FilmcraftApp::new_classic(session);
     app.apply_prefs(&ctx);
     assert_eq!(app.ui.language, Language::En, "no host hook");
 
-    let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     let asked = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = asked.clone();
     app.hooks.system_languages = Some(Box::new(move || {
@@ -768,7 +768,7 @@ fn czech_renders_with_bundled_fonts() {
 
 #[test]
 fn japanese_needs_an_installed_font() {
-    let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     let ctx = egui::Context::default();
     crate::theme::install(&ctx, &crate::theme::Tokens::for_kind(crate::theme::ThemeKind::default()));
     let r = crate::menus::invoke(&mut app, &ctx, "app.language.japanese", serde_json::json!({}));
@@ -831,7 +831,7 @@ fn language_menu_and_settings_choices_are_in_the_same_order() {
     for c in filmcraft_engine::settings::categories() {
         choices(c.rows, &mut settings);
     }
-    let app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+    let app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
     let menu: Vec<String> = crate::menus::menu_items(&app).into_iter().filter(|it| it.id.starts_with("app.language.")).map(|it| it.label).collect();
     assert!(!settings.is_empty());
     assert_eq!(menu, settings);

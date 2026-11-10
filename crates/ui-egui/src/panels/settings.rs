@@ -976,7 +976,7 @@ mod tests {
     #[test]
     fn favorite_theme_star_and_shortcut_select_explicit_family() {
         use egui_kittest::{Harness, kittest::Queryable};
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         open(&mut app, "appearance").unwrap();
         let mut h = Harness::builder().with_size(vec2(1400.0, 1000.0)).build_eframe(move |_| app);
         h.run_steps(4);
@@ -986,7 +986,7 @@ mod tests {
         h.get_by_label("OK").click();
         h.run_steps(3);
         assert_eq!(h.state().session.prefs.appearance.favorite_themes, vec!["dark"]);
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.session.execute("prefs.set", json!({"key": "appearance.favoriteThemes", "value": ["light", "dark"]})).unwrap();
         let mut h = Harness::builder().with_size(vec2(400.0, 240.0)).build_ui_state(
             |ui, app| {
@@ -1012,7 +1012,7 @@ mod tests {
     #[test]
     fn ui_scale_overrides_the_system_scale_and_auto_restores_it() {
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         // a frame applying the settings, then the next one, where a new zoom takes effect
         let pass = |app: &mut FilmcraftApp| {
             let mut input = egui::RawInput::default();
@@ -1034,7 +1034,7 @@ mod tests {
     #[test]
     fn appearance_button_cycles_modes_without_losing_theme_choices() {
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         app.apply_prefs(&ctx);
         assert_eq!((app.session.prefs.appearance.appearance_mode.as_str(), app.tokens.kind), ("dark", ThemeKind::Dark), "new users keep Darkest");
         app.session.execute("prefs.set", json!({"values": {"appearance.darkTheme": "dark"}})).unwrap();
@@ -1060,7 +1060,7 @@ mod tests {
         use std::sync::Arc;
         use std::sync::atomic::{AtomicU8, Ordering};
         let ctx = egui::Context::default();
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let system = Arc::new(AtomicU8::new(2));
         let read = system.clone();
         app.hooks.system_theme = Some(Box::new(move |_| match read.load(Ordering::Relaxed) {

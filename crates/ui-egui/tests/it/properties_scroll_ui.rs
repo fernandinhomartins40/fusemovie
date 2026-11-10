@@ -49,7 +49,7 @@ fn properties_panel_scrolls_to_its_lower_sections() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).expect("demo project");
     let (tx, rx) = channel();
-    let app = FilmcraftApp::new(session).with_control(rx);
+    let app = FilmcraftApp::new_classic(session).with_control(rx);
     let harness = Harness::builder().with_size(egui::vec2(1600.0, 560.0)).with_max_steps(10_000).build_eframe(move |_cc| app);
     let mut d = Driver { harness, tx };
     d.frames(4);

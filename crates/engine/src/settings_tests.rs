@@ -245,6 +245,17 @@ fn v1_preferences_migrate_and_bad_values_are_repaired() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// v3 moves the dark theme to Studio once; a v3 file keeps whatever the user picked after that.
+#[test]
+fn v2_preferences_move_to_the_studio_theme_once() {
+    let v2 = |theme: &str, version: u32| json!({"version": version, "appearance": {"appearanceMode": "dark", "darkTheme": theme, "lightTheme": "light"}});
+    let p = Preferences::from_value(v2("darkest", 2));
+    assert_eq!((p.appearance.dark_theme.as_str(), p.appearance.color_theme.as_str(), p.version), ("studio", "studio", settings::PREFS_VERSION));
+    let p = Preferences::from_value(v2("darkest", 3));
+    assert_eq!(p.appearance.dark_theme, "darkest", "a later choice stays");
+    assert_eq!(Preferences::default().appearance.dark_theme, "studio", "new installs start in Studio");
+}
+
 #[test]
 fn prefs_set_validates_and_reset_works_per_category() {
     let mut s = Session::default();

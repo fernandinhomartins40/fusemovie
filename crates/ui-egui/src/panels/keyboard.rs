@@ -572,7 +572,7 @@ mod transcript_selection_tests {
             .map(|(i, w)| json!({"text": w, "start": tk(0.5 + i as f64 * 0.5), "end": tk(0.9 + i as f64 * 0.5)}))
             .collect();
         session.execute("transcript.set", json!({"item": a.item.0, "transcript": {"language": "en", "words": words}})).unwrap();
-        let mut app = crate::FilmcraftApp::new(session);
+        let mut app = crate::FilmcraftApp::new_classic(session);
         app.ui.text_tab = "Transcript".into();
         app.ui.transcript_sel = Some((3, 3));
         // the transcript shrinks behind the panel's back, as with `transcript.extract` over the control channel

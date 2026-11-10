@@ -59,6 +59,41 @@ impl FilmcraftApp {
             ui.ctx().set_cursor_icon(egui::CursorIcon::None);
             return;
         }
+        if !self.studio.classic {
+            crate::studio::frame(self, ui, full);
+        } else {
+            self.classic_body(ui, full);
+        }
+        // the Timeline has had its chance to place a file drop this frame; anything left stays a bin import
+        self.pending_timeline_drop = None;
+        panels::dialogs::show(self, &ctx);
+        panels::file_dialogs::show_overwrite(self, &ctx);
+        updates_ui::show(self, &ctx);
+        if !self.ui.show_status_bar || !self.studio.classic {
+            return;
+        }
+        let status_h = 20.0;
+        // Status / hint bar
+        let sb = egui::Rect::from_min_max(egui::pos2(full.min.x, full.max.y - status_h), full.max);
+        ui.painter().rect_filled(sb, 0.0, t.header_bg);
+        let hint = self.status_message(ui.ctx());
+        let hint = if !hint.is_empty() { hint } else { self.hint_text() };
+        // the bar goes under the text and the job's controls, so they get their own clicks
+        let resp = ui.interact(sb, egui::Id::unique("status-bar"), egui::Sense::click());
+        if resp.clicked() {
+            self.ui.status.clear();
+        }
+        let right = self.job_status(ui, sb, &t).unwrap_or(sb.max.x);
+        // A label, not painted text, so a path or an error can be selected and copied (#2295);
+        // too long a message ends in "…" before the job's progress and shows in full on hover.
+        let text = egui::Rect::from_min_max(egui::pos2(sb.min.x + 10.0, sb.min.y), egui::pos2((right - 10.0).max(sb.min.x + 10.0), sb.max.y));
+        let mut row = ui.new_child(egui::UiBuilder::new().max_rect(text).id_salt("status-text").layout(egui::Layout::left_to_right(egui::Align::Center)));
+        let shown = row.add(egui::Label::new(egui::RichText::new(&hint).font(Tokens::ui(11.0)).color(t.text_dim)).selectable(true).truncate());
+        self.auto.add("status.text", shown.rect, &hint);
+    }
+
+    /// Window ▸ Classic Layout: the header, then the dock area (or the Import / Export page).
+    fn classic_body(&mut self, ui: &mut egui::Ui, full: egui::Rect) {
         let header_h = if self.ui.show_header { header::HEIGHT } else { 0.0 };
         let header = egui::Rect::from_min_size(full.min, egui::vec2(full.width(), header_h));
         if self.ui.show_header {
@@ -71,25 +106,19 @@ impl FilmcraftApp {
             state::Mode::Import => panels::import_mode::show(self, ui, body),
             state::Mode::Export => panels::export_mode::show(self, ui, body),
         }
-        // the Timeline has had its chance to place a file drop this frame; anything left stays a bin import
-        self.pending_timeline_drop = None;
-        panels::dialogs::show(self, &ctx);
-        panels::file_dialogs::show_overwrite(self, &ctx);
-        updates_ui::show(self, &ctx);
-        if !self.ui.show_status_bar {
-            return;
-        }
-        // Status / hint bar
-        let sb = egui::Rect::from_min_max(egui::pos2(full.min.x, full.max.y - status_h), full.max);
-        ui.painter().rect_filled(sb, 0.0, t.header_bg);
-        let now = ui.input(|i| i.time);
+    }
+
+    /// The status message to show (it clears itself after 8 s), or the control server's notice;
+    /// empty when there is neither. Both status bars (classic and Studio) show it.
+    pub(crate) fn status_message(&mut self, ctx: &egui::Context) -> String {
+        let now = ctx.input(|i| i.time);
         if self.ui.status != self.status_seen.0 {
             self.status_seen = (self.ui.status.clone(), now);
         } else if !self.ui.status.is_empty() {
             if now - self.status_seen.1 > 8.0 {
                 self.ui.status.clear();
             } else {
-                ui.ctx().request_repaint_after(std::time::Duration::from_secs(1));
+                ctx.request_repaint_after(std::time::Duration::from_secs(1));
             }
         }
         // The control server's startup notice (#3436): a session that asked for `--control` must
@@ -107,19 +136,7 @@ impl FilmcraftApp {
                 }
             }
         }
-        let hint = if !self.ui.status.is_empty() { self.ui.status.clone() } else { self.hint_text() };
-        // the bar goes under the text and the job's controls, so they get their own clicks
-        let resp = ui.interact(sb, egui::Id::unique("status-bar"), egui::Sense::click());
-        if resp.clicked() {
-            self.ui.status.clear();
-        }
-        let right = self.job_status(ui, sb, &t).unwrap_or(sb.max.x);
-        // A label, not painted text, so a path or an error can be selected and copied (#2295);
-        // too long a message ends in "…" before the job's progress and shows in full on hover.
-        let text = egui::Rect::from_min_max(egui::pos2(sb.min.x + 10.0, sb.min.y), egui::pos2((right - 10.0).max(sb.min.x + 10.0), sb.max.y));
-        let mut row = ui.new_child(egui::UiBuilder::new().max_rect(text).id_salt("status-text").layout(egui::Layout::left_to_right(egui::Align::Center)));
-        let shown = row.add(egui::Label::new(egui::RichText::new(&hint).font(Tokens::ui(11.0)).color(t.text_dim)).selectable(true).truncate());
-        self.auto.add("status.text", shown.rect, &hint);
+        self.ui.status.clone()
     }
 
     /// The running job (export / render previews), if any; plays the rendered range when a preview
@@ -156,7 +173,7 @@ impl FilmcraftApp {
 
     /// Right side of the status bar: the running job (export / render previews) with a progress
     /// bar and a cancel button. Returns where it starts, if a job is running.
-    fn job_status(&mut self, ui: &mut egui::Ui, sb: egui::Rect, t: &Tokens) -> Option<f32> {
+    pub(crate) fn job_status(&mut self, ui: &mut egui::Ui, sb: egui::Rect, t: &Tokens) -> Option<f32> {
         use std::sync::atomic::Ordering;
         let job = self.running_job()?;
         let f = job.progress.fraction().clamp(0.0, 1.0);
@@ -200,7 +217,7 @@ impl FilmcraftApp {
     }
 
     /// Contextual hint for the status bar (Premiere shows tool/gesture hints here).
-    fn hint_text(&self) -> String {
+    pub(crate) fn hint_text(&self) -> String {
         let mac = cfg!(target_os = "macos");
         match self.ui.tool {
             state::Tool::Selection if mac => {
@@ -274,7 +291,7 @@ mod job_status_tests {
     /// "Exporting… 46%" jumped sideways whenever the time left gained or lost a digit or its hour.
     #[test]
     fn the_job_text_changes_once_a_second_and_where_it_starts_stays_put() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let job = filmcraft_engine::Job { id: 7, label: "Exporting".into(), progress: Default::default(), result: Default::default() };
         let progress = job.progress.clone();
         progress.total.store(1_000_000, Ordering::Relaxed);

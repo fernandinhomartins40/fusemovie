@@ -16,6 +16,9 @@ pub enum ThemeKind {
     /// Slightly lighter grey panels (Premiere's brightness slider mid position).
     Medium,
     Light,
+    /// The Fuse family's house look: near-black canvas, grey chrome, amber accent
+    /// (`docs/fuse-suite/02-studio-design.md`). The default for new installs.
+    Studio,
 }
 
 impl ThemeKind {
@@ -25,12 +28,14 @@ impl ThemeKind {
             ThemeKind::Dark => "darkest",
             ThemeKind::Medium => "dark",
             ThemeKind::Light => "light",
+            ThemeKind::Studio => "studio",
         }
     }
     pub fn from_pref(s: &str) -> ThemeKind {
         match s {
             "dark" => ThemeKind::Medium,
             "light" => ThemeKind::Light,
+            "studio" => ThemeKind::Studio,
             _ => ThemeKind::Dark,
         }
     }
@@ -39,6 +44,7 @@ impl ThemeKind {
             "dark" | "darkest" => Some(ThemeKind::Dark),
             "medium" | "grey" | "gray" => Some(ThemeKind::Medium),
             "light" => Some(ThemeKind::Light),
+            "studio" => Some(ThemeKind::Studio),
             _ => None,
         }
     }
@@ -143,6 +149,20 @@ pub struct Tokens {
     pub monitor_bg: Color32,
     pub timecode: Color32,
     pub danger: Color32,
+    // Studio shell surfaces (`crate::studio`); the other themes map them onto their own colours.
+    /// Behind the work area and the Home page.
+    pub canvas: Color32,
+    /// The bottom strip (the Timeline).
+    pub dock: Color32,
+    /// Bars and side panels.
+    pub chrome: Color32,
+    /// Cards, floating menus and pills.
+    pub card: Color32,
+    pub card_border: Color32,
+    /// The main button of a screen and the active mode / tool.
+    pub primary_bg: Color32,
+    /// Text on `primary_bg`.
+    pub primary_text: Color32,
     pub radius: f32,
     pub radius_sm: f32,
     pub gap: f32,
@@ -236,6 +256,13 @@ impl Tokens {
             monitor_bg: Color32::from_rgb(0x1d, 0x1d, 0x1d),
             timecode: Color32::from_rgb(0x40, 0x96, 0xf3),
             danger: Color32::from_rgb(0xdc, 0x51, 0x3d),
+            canvas: Color32::from_rgb(0, 0, 0),
+            dock: Color32::from_rgb(0x1d, 0x1d, 0x1d),
+            chrome: Color32::from_rgb(0x1d, 0x1d, 0x1d),
+            card: Color32::from_rgb(0x24, 0x24, 0x24),
+            card_border: Color32::from_rgb(0x30, 0x30, 0x30),
+            primary_bg: Color32::from_rgb(0x2f, 0x6b, 0xdf),
+            primary_text: Color32::WHITE,
             radius: 0.0,
             radius_sm: 4.0,
             gap: 4.0,
@@ -328,8 +355,64 @@ impl Tokens {
                 tl_header_bg: Color32::from_rgb(214, 214, 214),
                 tl_ruler_bg: Color32::from_rgb(226, 226, 226),
                 tl_ruler_text: Color32::from_rgb(80, 80, 80),
+                canvas: Color32::from_rgb(180, 180, 180),
+                dock: Color32::from_rgb(214, 214, 214),
+                chrome: Color32::from_rgb(214, 214, 214),
+                card: Color32::from_rgb(232, 232, 232),
+                card_border: Color32::from_rgb(200, 200, 200),
                 ..dark
             },
+            ThemeKind::Studio => Self::studio(dark),
+        }
+    }
+
+    /// The Studio theme (exact values from `docs/fuse-suite/02-studio-design.md`).
+    fn studio(dark: Tokens) -> Tokens {
+        let rgb = Color32::from_rgb;
+        let (canvas, dock, chrome, card) = (rgb(19, 20, 20), rgb(20, 20, 21), rgb(29, 29, 30), rgb(35, 35, 36));
+        let (separator, hover, amber) = (rgb(54, 54, 56), rgb(48, 48, 50), rgb(253, 181, 40));
+        let (text, dim, faint) = (Color32::from_gray(240), Color32::from_gray(170), Color32::from_gray(110));
+        Tokens {
+            app_bg: canvas,
+            header_bg: chrome,
+            panel_bg: chrome,
+            tab_bg: chrome,
+            tab_text: dim,
+            tab_text_active: text,
+            focus: amber,
+            accent: amber,
+            accent_hover: rgb(254, 197, 84),
+            text,
+            text_dim: dim,
+            text_faint: faint,
+            icon: dim,
+            icon_active: text,
+            hover,
+            pressed: rgb(62, 62, 64),
+            field_bg: rgb(28, 28, 29),
+            field_border: rgb(72, 72, 74),
+            separator,
+            row_alt: rgb(33, 33, 34),
+            row_selected: rgb(66, 56, 34),
+            hot_text: amber,
+            pill_active_bg: rgb(58, 58, 60),
+            tl_bg: dock,
+            tl_track_bg: dock,
+            tl_track_bg_alt: rgb(24, 24, 25),
+            tl_header_bg: chrome,
+            tl_ruler_bg: chrome,
+            playhead: amber,
+            track_target: rgb(170, 118, 20),
+            monitor_bg: canvas,
+            timecode: amber,
+            canvas,
+            dock,
+            chrome,
+            card,
+            card_border: separator,
+            primary_bg: amber,
+            primary_text: rgb(18, 18, 18),
+            ..dark
         }
     }
 
@@ -337,6 +420,9 @@ impl Tokens {
     /// the focus outline, the playhead, timecodes, drag values and track targeting) and accessible
     /// colour contrast (brighter secondary text and borders).
     pub fn with_appearance(mut self, highlight: Option<[u8; 3]>, accessible_contrast: bool) -> Self {
+        // Studio's amber is its identity: only a highlight the user picked replaces it.
+        let factory = filmcraft_engine::settings::parse_hex(filmcraft_engine::settings::DEFAULT_HIGHLIGHT);
+        let highlight = highlight.filter(|h| !(self.kind == ThemeKind::Studio && Some(*h) == factory));
         if let Some([r, g, b]) = highlight {
             let c = Color32::from_rgb(r, g, b);
             // A highlight of the user's own also colours the theme's other blues: the same hue, as

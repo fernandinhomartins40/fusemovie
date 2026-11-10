@@ -42,7 +42,7 @@ fn harness(effect: &str) -> Harness<'static, FilmcraftApp> {
     for (at, frames) in [(0, 48), (48, 48)] {
         s.execute("timeline.place", json!({"item":5,"time":rate.tick_of(at).0,"duration":rate.tick_of(frames).0})).unwrap();
     }
-    let mut app = FilmcraftApp::new(s);
+    let mut app = FilmcraftApp::new_classic(s);
     app.set_workspace("Effects");
     app.ui.effects_search = effect.to_string();
     let mut builder = Harness::builder().with_size(vec2(1600.0, 980.0)).with_max_steps(10_000);

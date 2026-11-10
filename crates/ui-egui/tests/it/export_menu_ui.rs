@@ -24,7 +24,7 @@ impl Driver {
     /// `save_to: None` is a cancelled save panel.
     fn new(session: Session, save_to: Option<std::path::PathBuf>, asked: Asked) -> Self {
         let (tx, rx) = channel();
-        let mut app = FilmcraftApp::new(session).with_control(rx);
+        let mut app = FilmcraftApp::new_classic(session).with_control(rx);
         app.hooks.pick_save_as = Some(Box::new(move |filter, exts, suggested| {
             asked.lock().unwrap().push((filter.to_string(), exts.iter().map(|e| e.to_string()).collect(), suggested.to_string()));
             save_to.as_ref().map(|d| d.join(suggested).to_string_lossy().into_owned())

@@ -53,7 +53,7 @@ impl Driver {
         session.execute("file.newSequence", json!({"name": "Press", "video": 3, "audio": 3})).expect("sequence");
         session.prefs.audio.scrub_audio = true;
         let (tx, rx) = channel();
-        let mut app = FilmcraftApp::new(session).with_control(rx);
+        let mut app = FilmcraftApp::new_classic(session).with_control(rx);
         let stops = Arc::new(AtomicUsize::new(0));
         app.audio = Some(Box::new(Out { stops: stops.clone() }));
         let harness = Harness::builder().with_size(egui::vec2(1600.0, 980.0)).with_step_dt(1.0 / 60.0).with_max_steps(10_000).build_eframe(move |_cc| app);

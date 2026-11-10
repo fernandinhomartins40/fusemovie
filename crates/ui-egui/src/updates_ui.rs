@@ -169,7 +169,7 @@ mod tests {
     #[test]
     #[cfg(not(target_arch = "wasm32"))]
     fn startup_prompt_shows_and_closes() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ctx = egui::Context::default();
         let release = craft_update::Release {
             tag: "v99.0.0".into(),

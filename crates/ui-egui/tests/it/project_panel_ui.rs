@@ -29,7 +29,7 @@ struct Driver {
 impl Driver {
     fn with(session: Session) -> Self {
         let (tx, rx) = channel();
-        let app = FilmcraftApp::new(session).with_control(rx);
+        let app = FilmcraftApp::new_classic(session).with_control(rx);
         let snapshots = std::env::var_os("FILMCRAFT_UI_SNAPSHOT_DIR").map(std::path::PathBuf::from);
         let mut b = Harness::builder().with_size(egui::vec2(1600.0, 980.0)).with_max_steps(10_000);
         if snapshots.is_some() {
@@ -868,7 +868,7 @@ fn media_dir(tag: &str) -> std::path::PathBuf {
 fn file_dialog_import_uses_shown_bin_unless_explicit() {
     let dir = media_dir("import-bin");
     let path = dir.join("a-interview.wav").to_string_lossy().into_owned();
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.hooks.pick_files = Some(Box::new(move |_| vec![path.clone()]));
     let parent = app.session.execute("file.newBin", json!({"name": "Footage"})).unwrap()["bin"].as_u64().unwrap();
     let child = app.session.execute("file.newBin", json!({"name": "Selects", "parent": parent})).unwrap()["bin"].as_u64().unwrap();
@@ -1164,7 +1164,7 @@ fn double_click_empty_area_imports_with_a_project_loaded() {
             session.execute("file.openDemoProject", json!({})).expect("demo project");
         }
         let (tx, rx) = channel();
-        let mut app = FilmcraftApp::new(session).with_control(rx);
+        let mut app = FilmcraftApp::new_classic(session).with_control(rx);
         let picks = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let seen = picks.clone();
         app.hooks.pick_files = Some(Box::new(move |_| {
@@ -1233,7 +1233,7 @@ fn double_click_imports_with_audio_in_the_timeline() {
     let item = filmcraft_engine::commands::import_bytes(&mut session, "/tone.wav", bytes, None).unwrap();
     session.execute("timeline.place", json!({"item": item.0, "audioTrack": "A1", "seconds": 0.0})).unwrap();
     let (tx, rx) = channel();
-    let mut app = FilmcraftApp::new(session).with_control(rx);
+    let mut app = FilmcraftApp::new_classic(session).with_control(rx);
     let picks = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
     let seen = picks.clone();
     app.hooks.pick_files = Some(Box::new(move |_| {

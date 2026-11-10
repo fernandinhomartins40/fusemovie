@@ -209,7 +209,7 @@ mod ime_byte_delete_tests {
         use filmcraft_project::ClipId;
         use filmcraft_project::graphic::{Appearance, LayerContent, LayerSpec, LayerTransform, TextProps};
 
-        let mut app = crate::FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = crate::FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ed = GfxEdit { clip: 1, layer: 0, caret: 3, anchor: 3, ..Default::default() };
         app.ui.gfx_edit = Some(ed.clone());
         let props = TextProps {

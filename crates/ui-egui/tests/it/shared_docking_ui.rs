@@ -83,7 +83,7 @@ fn builtin_and_legacy_workspace_shapes_roundtrip_and_save_floating() {
     std::fs::create_dir_all(&dir).unwrap();
     let mut session = Session::default();
     session.prefs_path = Some(dir.join("preferences.json"));
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     let ctx = egui::Context::default();
     app.ui.dock = layout();
     menus::invoke(&mut app, &ctx, "window.floatPanel", json!({"panel": "Info", "rect": [45, 65, 420, 320]})).unwrap();
@@ -96,7 +96,7 @@ fn builtin_and_legacy_workspace_shapes_roundtrip_and_save_floating() {
     assert_eq!(prefs.saved[0].floating[0]["panels"], json!(["Info"]));
     let mut restarted_session = Session::default();
     restarted_session.prefs_path = Some(dir.join("preferences.json"));
-    let restarted = FilmcraftApp::new(restarted_session);
+    let restarted = FilmcraftApp::new_classic(restarted_session);
     let mut h = Harness::builder().with_size(vec2(1200.0, 760.0)).build_eframe(move |_| restarted);
     for _ in 0..4 {
         step(&mut h);
@@ -231,7 +231,7 @@ fn maximize_frame_round_trip(h: &mut Harness<'_, FilmcraftApp>, action_log: &mut
 fn real_panel_drag_merges_splits_floats_and_redocks_without_editing_documents() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
-    let app = FilmcraftApp::new(session);
+    let app = FilmcraftApp::new_classic(session);
     let snapshots = std::env::var_os("CRAFT_UI_DOCKING_SNAPSHOT_DIR").map(std::path::PathBuf::from);
     let mut builder = Harness::builder().with_size(vec2(1200.0, 760.0));
     if snapshots.is_some() {
@@ -328,7 +328,7 @@ fn real_panel_drag_merges_splits_floats_and_redocks_without_editing_documents() 
 
 #[test]
 fn dropping_on_the_window_edge_docks_beside_the_whole_workspace() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let mut h = Harness::builder().with_size(vec2(1200.0, 760.0)).build_eframe(move |_| app);
     for _ in 0..4 {
@@ -353,7 +353,7 @@ fn dropping_on_the_window_edge_docks_beside_the_whole_workspace() {
 /// nothing floats and nothing moves. Only Ctrl/Cmd or leaving the window floats.
 #[test]
 fn a_release_over_no_target_cancels_the_drag() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let mut h = Harness::builder().with_size(vec2(1200.0, 760.0)).build_eframe(move |_| app);
     for _ in 0..4 {
@@ -370,7 +370,7 @@ fn a_release_over_no_target_cancels_the_drag() {
 
 #[test]
 fn dock_panel_without_anchor_docks_along_a_workspace_edge() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let ctx = egui::Context::default();
     menus::invoke(&mut app, &ctx, "window.dockPanel", json!({"panel": "Program", "zone": "bottom"})).unwrap();
@@ -410,7 +410,7 @@ fn tabs_containing(layout: &Layout, panel: PanelKind) -> Vec<PanelKind> {
 
 #[test]
 fn docking_commands_reject_bad_geometry_and_targets_without_partial_changes() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let ctx = egui::Context::default();
     let before = app.ui.dock.clone();
@@ -436,7 +436,7 @@ fn action_state(h: &Harness<'_, FilmcraftApp>, action: &str) -> serde_json::Valu
 
 #[test]
 fn catalog_docking_action_supports_resize_reorder_and_floating_geometry() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = root(split(false, SplitSize::FixedFirst(300.0), tabs(&[PanelKind::Project, PanelKind::Info], 1), tabs(&[PanelKind::Program], 0)));
     let ctx = egui::Context::default();
     for action in [
@@ -500,7 +500,7 @@ fn unreadable_floating_workspace_does_not_erase_valid_workspaces_or_current_name
 fn floating_tts_and_timeline_reveal_keeps_one_owner_and_draft_without_project_edits() {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     app.ui.tts.text = "Synthetic retained narration".into();
     app.show_panel(PanelKind::TextToSpeech);
     let project = app.session.project.clone();
@@ -553,7 +553,7 @@ fn narration_selection_reveals_covered_floating_tts_once_without_editing_the_pro
     };
     std::sync::Arc::make_mut(&mut session.project).narrations.insert(clip.item, narration.clone());
     let project = session.project.clone();
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     app.show_panel(PanelKind::TextToSpeech);
     let mut h = Harness::builder().with_size(vec2(1200.0, 760.0)).build_eframe(move |_| app);
     for _ in 0..4 {
@@ -627,7 +627,7 @@ fn narration_selection_reveals_covered_floating_tts_once_without_editing_the_pro
 /// it now floats again where it was. Closed while docked, it opens docked as before.
 #[test]
 fn a_panel_closed_while_floating_reopens_floating_where_it_was() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     let ctx = egui::Context::default();
     menus::invoke(&mut app, &ctx, "window.floatPanel", json!({"panel": "Info", "rect": [45, 65, 420, 320]})).unwrap();
     let rect = app.ui.dock.floating.iter().find(|g| g.contains(&PanelKind::Info)).unwrap().rect;
@@ -654,7 +654,7 @@ fn a_panel_closed_while_floating_reopens_floating_where_it_was() {
 
     // with nothing else docked, a reopened panel has to stay docked (the workspace keeps one
     // docked panel); its floating place is kept, not lost (#2482 review)
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     menus::invoke(&mut app, &ctx, "window.floatPanel", json!({"panel": "Info", "rect": [45, 65, 420, 320]})).unwrap();
     let rect = app.ui.dock.floating.iter().find(|g| g.contains(&PanelKind::Info)).unwrap().rect;
     for _ in 0..64 {
@@ -677,7 +677,7 @@ fn a_panel_closed_while_floating_reopens_floating_where_it_was() {
 /// craft-ui's `window.panel.*` commands and FilmCraft's own docking commands share one path.
 #[test]
 fn shared_dock_commands_and_filmcraft_names_move_panels() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let ctx = egui::Context::default();
     menus::invoke(&mut app, &ctx, "window.panel.move", json!({"panel": "Info", "anchor": "Program", "zone": "right"})).unwrap();
@@ -700,7 +700,7 @@ fn window_layer(h: &Harness<'_, FilmcraftApp>, panel: PanelKind) -> egui::LayerI
 fn demo_harness() -> Harness<'static, FilmcraftApp> {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
-    let app = FilmcraftApp::new(session);
+    let app = FilmcraftApp::new_classic(session);
     let mut h = Harness::builder().with_size(vec2(1400.0, 900.0)).build_eframe(move |_| app);
     for _ in 0..4 {
         step(&mut h);
@@ -793,7 +793,7 @@ fn clicking_the_timeline_leaves_a_closed_or_floating_program_monitor_alone() {
 /// No move or float may empty the frame tree, whichever unit it moves.
 #[test]
 fn the_last_docked_group_cannot_float_away() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = root(tabs(&[PanelKind::Project, PanelKind::Info], 0));
     let ctx = egui::Context::default();
     let before = app.ui.dock.clone();
@@ -837,7 +837,7 @@ fn program_floats_at_a_useful_height() {
 /// Only docked frames maximize: Maximize Frame on a floating panel leaves nothing maximized.
 #[test]
 fn a_floating_panel_does_not_maximize() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let ctx = egui::Context::default();
     menus::invoke(&mut app, &ctx, "window.floatPanel", json!({"panel": "Info", "rect": [45, 65, 420, 320]})).unwrap();
@@ -852,7 +852,7 @@ fn a_floating_panel_does_not_maximize() {
 /// A closed panel reopens through `window.panel.activate`.
 #[test]
 fn activate_reopens_a_closed_panel() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     let ctx = egui::Context::default();
     menus::invoke(&mut app, &ctx, "window.panel.close", json!({"panel": "Info"})).unwrap();
@@ -922,7 +922,7 @@ fn close_panel_group_keeps_the_timeline_and_closes_the_sequence() {
 /// viewport is drawn below the strip, where a press on it cannot move the app window.
 #[test]
 fn a_floating_panel_stays_out_of_the_integrated_titlebar() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     app.ui.dock = layout();
     app.integrated_titlebar = true;
     let ctx = egui::Context::default();

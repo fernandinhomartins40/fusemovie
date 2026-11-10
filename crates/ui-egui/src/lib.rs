@@ -70,6 +70,7 @@ pub mod scrub;
 mod shuttle;
 pub mod source_playback;
 pub mod state;
+pub mod studio;
 pub mod theme;
 mod theme_favorites;
 pub mod updates_ui;
@@ -198,6 +199,8 @@ pub enum ControlNotice {
 pub struct FilmcraftApp {
     pub session: Session,
     pub ui: UiState,
+    /// The Studio shell's view state (`studio::frame`); `classic` brings the docking layout back.
+    pub studio: studio::StudioState,
     pub tokens: Tokens,
     pub frames: Arc<FrameServer>,
     pub playback: Playback,

@@ -14,7 +14,7 @@ const H: f32 = 980.0;
 fn harness(show_header: bool, show_status_bar: bool) -> Harness<'static, FilmcraftApp> {
     let mut s = Session::default();
     s.execute("file.openDemoProject", json!({})).unwrap();
-    let mut app = FilmcraftApp::new(s);
+    let mut app = FilmcraftApp::new_classic(s);
     app.ui.show_header = show_header;
     app.ui.show_status_bar = show_status_bar;
     let mut harness = Harness::builder().with_size(egui::vec2(W, H)).with_max_steps(10_000).build_eframe(move |_cc| app);

@@ -138,7 +138,7 @@ mod tests {
 
     #[test]
     fn tool_hints_follow_the_active_shortcut_and_hide_cleared_keys() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let modified = if cfg!(target_os = "macos") { "⇧⌘K" } else { "Ctrl+Shift+K" };
         for (tool, command, default, keys, display) in
             [(Tool::Razor, "tool.razor", "C", "S", "S"), (Tool::TrackSelectBackward, "tool.trackSelectBackward", "Shift+A", "Cmd+Shift+K", modified)]
@@ -175,7 +175,7 @@ mod tests {
     /// The panel shown twice, then the button pressed on the Type tool group and dragged by `by`
     /// within 0.1 s, well before a long press.
     fn press_and_drag_type(by: egui::Vec2) -> (FilmcraftApp, egui::Context) {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ctx = egui::Context::default();
         crate::theme::install(&ctx, &app.tokens);
         frame(&mut app, &ctx, 0.0, vec![]);
@@ -264,7 +264,7 @@ mod tests {
 
     #[test]
     fn a_right_click_on_a_grouped_tool_still_opens_its_flyout() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ctx = egui::Context::default();
         crate::theme::install(&ctx, &app.tokens);
         frame(&mut app, &ctx, 0.0, vec![]);
@@ -280,7 +280,7 @@ mod tests {
 
     #[test]
     fn long_press_type_selects_vertical_without_selecting_on_release() {
-        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let mut app = FilmcraftApp::new_classic(filmcraft_engine::Session::default());
         let ctx = egui::Context::default();
         crate::theme::install(&ctx, &app.tokens);
         frame(&mut app, &ctx, 0.0, vec![]);

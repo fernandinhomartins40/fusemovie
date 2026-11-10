@@ -11,7 +11,7 @@ fn app(item: u64) -> FilmcraftApp {
     let mut session = Session::default();
     session.execute("file.openDemoProject", json!({})).unwrap();
     session.execute("source.open", json!({"item":item})).unwrap();
-    FilmcraftApp::new(session)
+    FilmcraftApp::new_classic(session)
 }
 
 #[test]
@@ -76,7 +76,7 @@ fn space_targets_the_focused_monitor_and_output_is_exclusive() {
 
 #[test]
 fn empty_source_returns_a_useful_error() {
-    let mut app = FilmcraftApp::new(Session::default());
+    let mut app = FilmcraftApp::new_classic(Session::default());
     assert!(app.play_source().unwrap_err().contains("Source monitor"));
     assert!(!app.source_playback.clock.playing);
 }
@@ -248,7 +248,7 @@ fn sequence_in_source(prepare: impl FnOnce(&mut Session)) -> (FilmcraftApp, Arc<
     let seq = session.state.active_sequence.expect("a sequence").0;
     session.execute("source.open", json!({"item": seq})).unwrap();
     let fill = Arc::new(Mutex::new(None));
-    let mut app = FilmcraftApp::new(session);
+    let mut app = FilmcraftApp::new_classic(session);
     app.audio = Some(Box::new(Out { frames: Arc::new(AtomicU64::new(0)), fill: fill.clone(), stalled: false }));
     (app, fill)
 }

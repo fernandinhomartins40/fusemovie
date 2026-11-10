@@ -70,7 +70,7 @@ impl Driver {
         s.prefs.timeline.clip_mismatch_warning = false;
         s.execute("source.open", json!({"item": source})).unwrap();
         let (tx, rx) = channel();
-        let app = FilmcraftApp::new(s).with_control(rx);
+        let app = FilmcraftApp::new_classic(s).with_control(rx);
         let harness = Harness::builder().with_size(egui::vec2(1600.0, 980.0)).with_max_steps(10_000).build_eframe(move |cc| {
             filmcraft_ui_egui::install_ime_reset_callbacks(&cc.egui_ctx);
             app

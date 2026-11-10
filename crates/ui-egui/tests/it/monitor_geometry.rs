@@ -32,7 +32,7 @@ fn harness_at_scale(width: f32, kind: ThemeKind, which: Which, scale: f32) -> Ha
             let source = filmcraft_ui_egui::panels::dragged_source(ui);
             ui.ctx().data_mut(|data| data.insert_temp(egui::Id::unique("observed-source-drag"), source));
         },
-        FilmcraftApp::new(session),
+        FilmcraftApp::new_classic(session),
     );
     theme::install(&h.ctx, &h.state().tokens);
     h.run_steps(4);
