@@ -531,16 +531,18 @@ pub fn show_in(app: &mut FilmcraftApp, ui: &mut Ui) {
     run(app, acts);
 }
 
-/// "Codex" … New Chat, Conversations, ⋯, ✕.
+/// "Codex" … New Chat, Conversations, More, Close.
 fn header(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
     let running = p.link.is_some();
     ui.horizontal(|ui| {
         ui.label(RichText::new(tl!("Codex")).font(Tokens::ui(15.0)).strong().color(t.text));
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if ui.small_button("✕").on_hover_text(tl!("Close")).clicked() {
+            // Icons, not glyphs: the UI fonts don't have ✕ or ⋯.
+            let close = crate::icons::button(ui, crate::icons::Icon::Close, 20.0, false, t, tl!("Close"));
+            if crate::widgets::accessible_name(close, tl!("Close")).clicked() {
                 acts.push(Act::Close);
             }
-            let more = ui.small_button("⋯").on_hover_text(tl!("More"));
+            let more = crate::widgets::accessible_name(crate::icons::button(ui, crate::icons::Icon::Hamburger, 20.0, false, t, tl!("More")), tl!("More"));
             egui::Popup::menu(&more).show(|ui| {
                 ui.set_min_width(200.0);
                 if let Some(Some(who)) = &p.account {
@@ -623,7 +625,7 @@ fn conversation(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
             }
             Entry::Done(n) => {
                 let text = if *n == 1 { tl!("Finished in 1 step.").to_string() } else { tlf!("Finished in {n} steps.", n) };
-                ui.add(egui::Label::new(RichText::new(format!("✓ {text}")).color(t.text_dim)).wrap());
+                ui.add(egui::Label::new(RichText::new(text).color(t.text_dim)).wrap());
             }
             Entry::Error(e) => {
                 ui.add(egui::Label::new(RichText::new(e).color(t.danger)).wrap());
@@ -673,14 +675,15 @@ fn sign_in_card(ui: &mut Ui, t: &Tokens, signing_in: bool, acts: &mut Vec<Act>) 
     });
 }
 
-/// A turn's steps: ✓ when done, a spinner on the running one, and the raw calls folded below.
+/// A turn's steps: a dot when done, a spinner on the running one, and the raw calls folded below.
 fn steps(ui: &mut Ui, t: &Tokens, id: usize, lines: &[String], running: bool) {
     for (k, line) in lines.iter().enumerate() {
         ui.horizontal_top(|ui| {
             if running && k + 1 == lines.len() {
                 ui.add(egui::Spinner::new().size(14.0).color(t.accent));
             } else {
-                ui.label(RichText::new("✓").color(t.accent));
+                let (r, _) = ui.allocate_exact_size(vec2(14.0, 14.0), Sense::hover());
+                ui.painter().circle_filled(r.center(), 4.0, t.accent);
             }
             ui.add(egui::Label::new(RichText::new(step_label(line)).color(t.text)).wrap());
         });
@@ -699,7 +702,7 @@ fn composer(ui: &mut Ui, t: &Tokens, p: &mut CodexPanel, acts: &mut Vec<Act>) {
         ui.horizontal_wrapped(|ui| {
             for path in &p.attachments {
                 // The whole chip removes it: there is nothing else to do with it here.
-                if ui.add(egui::Button::new(RichText::new(format!("✕ {}", file_name(path))).small()).truncate()).on_hover_text(tl!("Remove")).clicked() {
+                if ui.add(egui::Button::new(RichText::new(format!("{}  ×", file_name(path))).small()).truncate()).on_hover_text(tl!("Remove")).clicked() {
                     acts.push(Act::Detach(path.clone()));
                 }
             }
@@ -764,7 +767,7 @@ fn footer(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
 fn model_menu(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
     let current = p.model.as_deref().unwrap_or_default();
     let name = p.models.iter().find(|m| m.id == current).map_or(current, |m| m.name.as_str());
-    let resp = ui.small_button(format!("{name} ▾")).on_hover_text(tl!("Model"));
+    let resp = ui.small_button(name).on_hover_text(tl!("Model"));
     egui::Popup::menu(&resp).show(|ui| {
         ui.set_max_width(300.0);
         for m in &p.models {
