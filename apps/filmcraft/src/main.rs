@@ -28,6 +28,7 @@ mod appearance;
 mod args;
 mod audio;
 mod audio_in;
+mod codex;
 mod control_server;
 #[cfg(target_os = "linux")]
 mod dev_icon;
@@ -368,6 +369,17 @@ fn app_creator(launch: Launch, graphics: graphics::GraphicsStart, created: Arc<A
             app.hooks.menu_changed = Some(update);
             app.ui.show_menu_bar = false;
         }
+        // Window › Codex bridges to a serving `--control` server; otherwise it opens one itself.
+        let mut codex_server = None;
+        let (mut codex_lazy, mut lazy_rx) = (None, None);
+        if let (Some(port), Some((_, _, None))) = (control_port, &control) {
+            codex_server = std::env::var(codex::TOKEN_VAR).ok().map(|token| (port, token));
+        } else {
+            // No server (or one that could not start): the app drains this channel, which the
+            // server Codex opens later feeds.
+            let (tx, rx) = std::sync::mpsc::channel();
+            (codex_lazy, lazy_rx) = (Some(tx), Some(rx));
+        }
         if let Some((rx, ready, disabled)) = control {
             app = if control_input_only { app.with_control_input_only(rx) } else { app.with_control(rx) };
             // The token cause is shown in the app as a fully translated sentence (the English
@@ -379,7 +391,44 @@ fn app_creator(launch: Launch, graphics: graphics::GraphicsStart, created: Arc<A
             // From here the app drains the queue on its first pass: stop rejecting requests.
             ready.store(true, Ordering::Relaxed);
         }
+        if let Some(rx) = lazy_rx {
+            app = app.with_control(rx);
+        }
+        app.hooks.codex = Some(codex_service(codex_server, codex_lazy, cc.egui_ctx.clone()));
         Ok(Box::new(app))
+    })
+}
+
+/// Window › Codex: starts `codex app-server` on demand, bridged to this window's control channel.
+/// Reuses the `--control` server when it serves; otherwise opens a loopback server on a free port
+/// (never the 9876 default: several Fuse apps may be open) with a fresh token the first time Codex
+/// starts, feeding `lazy` (the app's control queue). The token goes to the Codex child's
+/// environment only.
+fn codex_service(
+    mut server: Option<(u16, String)>,
+    lazy: Option<std::sync::mpsc::Sender<filmcraft_ui_egui::ControlRequest>>,
+    ctx: egui::Context,
+) -> filmcraft_ui_egui::codex_panel::CodexStartFn {
+    Box::new(move |account| {
+        let codex = codex::find_codex().ok_or(codex::NOT_FOUND)?;
+        let base = codex::base_dir().ok_or("no folder for the Codex accounts")?;
+        let (port, token) = match &server {
+            Some(server) => server.clone(),
+            None => {
+                let tx = lazy.clone().ok_or("no control channel")?;
+                let listener = std::net::TcpListener::bind(("127.0.0.1", 0)).map_err(|e| format!("could not open the control channel: {e}"))?;
+                let port = listener.local_addr().map_err(|e| e.to_string())?.port();
+                let token = codex::generate_token()?;
+                control_server::serve_listener(listener, token.clone(), ctx.clone(), tx);
+                server = Some((port, token.clone()));
+                (port, token)
+            }
+        };
+        // Codex works in a folder of its own, beside the account homes.
+        let dir = base.join("codex");
+        std::fs::create_dir_all(&dir).map_err(|e| format!("could not create {}: {e}", dir.display()))?;
+        let home = codex::account_home(&base, account)?;
+        codex::start(&codex, port, &token, &dir, &home, ctx.clone())
     })
 }
 

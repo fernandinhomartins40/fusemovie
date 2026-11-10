@@ -97,6 +97,13 @@ fn start_with_token(port: u16, ctx: egui::Context, token: Option<String>) -> (Re
     }
 }
 
+/// Serve an already bound `listener` with `token`, feeding `tx` (the running app's control queue,
+/// which is draining already). Window › Codex opens the channel this way on a free port when the
+/// app was not started with `--control`.
+pub fn serve_listener(listener: TcpListener, token: String, ctx: egui::Context, tx: Sender<ControlRequest>) {
+    std::thread::spawn(move || accept_loop(listener, tx, ctx, token, Arc::new(AtomicBool::new(true))));
+}
+
 fn accept_loop(listener: TcpListener, tx: Sender<ControlRequest>, ctx: egui::Context, token: String, ready: Arc<AtomicBool>) {
     let open = Arc::new(AtomicUsize::new(0));
     for mut stream in listener.incoming().flatten() {
