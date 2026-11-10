@@ -103,7 +103,7 @@ pub(crate) fn create(app: &mut FilmcraftApp, ctx: &egui::Context, d: &Draft) -> 
             if !dir.is_dir() {
                 return Err(tlf!("The folder {path} does not exist", path = dir.display()));
             }
-            if std::path::Path::new(name).file_name().is_none_or(|f| f != name) {
+            if std::path::Path::new(name).file_name().is_none_or(|f| f != std::ffi::OsStr::new(name)) {
                 return Err(tl!("A project name cannot contain a folder separator").into());
             }
             let path = dir.join(format!("{name}.fcproj"));
@@ -334,7 +334,7 @@ fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, 
     ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
         field_style(ui);
         let w = inner.width();
-        ui.add_sized(vec2(w, 32.0), egui::Label::new(egui::RichText::new(tl!("Project settings")).font(Tokens::semibold(16.0)).color(PAL.text)).halign(egui::Align::Min));
+        ui.label(egui::RichText::new(tl!("Project settings")).font(Tokens::semibold(16.0)).color(PAL.text));
         ui.add_space(if c { 0.0 } else { 6.0 });
         field_label(ui, tl!("Name"));
         let r = ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(w).margin(vec2(10.0, 7.0)));

@@ -460,6 +460,7 @@ pub(super) mod tests {
         assert_eq!((q.settings.width, q.settings.height), (1080, 1920), "status: {}", h.state().ui.status);
     }
 
+    #[derive(Debug)]
     struct OsFile(std::path::PathBuf);
     impl egui::DroppedFile for OsFile {
         fn path(&self) -> &std::path::Path {
