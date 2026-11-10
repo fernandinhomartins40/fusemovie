@@ -38,6 +38,20 @@ jobs:
       - name: Studio shell tests
         run: cargo test -p filmcraft-ui-egui --lib -- studio home new_doc codex brand updates_ui
 
+      # Offscreen PNGs of the Studio shell (each mode, 1440×900 and 1100×620) for the owner to look at.
+      - name: Studio snapshots
+        continue-on-error: true
+        env:
+          FUSE_STUDIO_SNAPSHOTS: "1"
+        run: cargo test -p filmcraft-ui-egui --lib -- studio_snapshots --nocapture
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-snapshots
+          path: docs/redesign/fusemovie/*.png
+          if-no-files-found: ignore
+
       - name: Automation tests
         run: cargo test -p filmcraft-automation --lib
 

@@ -268,6 +268,13 @@ pub fn codex_slot(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     ui.label(egui::RichText::new(tl!("The Codex assistant will appear here.")).color(t.text_dim));
 }
 
+/// Run command `id` the way a menu click does; an error goes to the status line.
+pub fn run(app: &mut FilmcraftApp, ctx: &egui::Context, id: &str) {
+    if let Err(e) = crate::menus::invoke(app, ctx, id, serde_json::json!({})) {
+        app.ui.status = e;
+    }
+}
+
 /// Window ▸ Classic Layout.
 pub fn toggle_classic(app: &mut FilmcraftApp) {
     app.studio.classic = !app.studio.classic;

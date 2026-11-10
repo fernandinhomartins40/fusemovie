@@ -38,7 +38,7 @@ fn shortcut_text(app: &FilmcraftApp, tool: Tool) -> Option<String> {
     tool.command_id().and_then(|id| app.session.shortcuts.primary(id)).map(|keys| crate::menus::shortcut_text(&keys))
 }
 
-fn tooltip(app: &FilmcraftApp, tool: Tool) -> String {
+pub(crate) fn tooltip(app: &FilmcraftApp, tool: Tool) -> String {
     let label = app.ui.language.tr(tool.label());
     match shortcut_text(app, tool) {
         Some(keys) => format!("{label} ({keys})"),

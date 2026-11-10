@@ -662,6 +662,23 @@ mod tests {
         }
     }
 
+    /// The Studio theme's tokens are the design doc's, and only a highlight of the user's own
+    /// replaces its amber.
+    #[test]
+    fn studio_theme_tokens_and_highlight() {
+        let t = Tokens::for_kind(ThemeKind::Studio);
+        assert_eq!(
+            [t.canvas, t.dock, t.chrome, t.card, t.separator, t.accent, t.primary_text],
+            [(19, 20, 20), (20, 20, 21), (29, 29, 30), (35, 35, 36), (54, 54, 56), (253, 181, 40), (18, 18, 18)].map(|(r, g, b)| Color32::from_rgb(r, g, b))
+        );
+        assert_eq!([t.text, t.text_dim, t.text_faint], [240, 170, 110].map(Color32::from_gray));
+        let factory = filmcraft_engine::settings::parse_hex(filmcraft_engine::settings::DEFAULT_HIGHLIGHT);
+        assert_eq!(t.with_appearance(factory, false).accent, t.accent);
+        assert_eq!(t.with_appearance(Some([0xe0, 0x45, 0x7b]), false).accent, Color32::from_rgb(0xe0, 0x45, 0x7b));
+        assert_eq!(ThemeKind::from_pref("studio"), ThemeKind::Studio);
+        assert_eq!(ThemeKind::Studio.pref_name(), "studio");
+    }
+
     /// The colours the highlight drives besides the accent (#707).
     fn highlight_blues(t: &Tokens) -> [Color32; 5] {
         [t.focus, t.playhead, t.timecode, t.hot_text, t.track_target]

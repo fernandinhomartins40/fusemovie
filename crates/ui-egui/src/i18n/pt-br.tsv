@@ -3688,3 +3688,27 @@
 	Toggle Color Grading Section	Alternar seção de gradação de cor
 	Color Grading Section	Seção de gradação de cor
 	Read Video Scopes	Ler escopos de vídeo
+# Studio shell (crate::studio)
+	Menu	Menu
+	Search command	Buscar comando
+	No commands found	Nenhum comando encontrado
+	Not saved	Não salvo
+	Saved	Salvo
+	Snap	Atrair
+	No clip selected	Nenhum clipe selecionado
+	Start	Início
+	Enabled	Ativado
+	{fps} fps	{fps} fps
+	{n} clips	{n} clipes
+	Classic Layout	Layout clássico
+	Studio	Studio
+	The Codex assistant will appear here.	O assistente Codex aparecerá aqui.
+studio.mode	Assemble	Montar
+studio.mode	Edit	Cortar
+studio.mode	Color	Cor
+studio.mode	Audio	Áudio
+studio.mode	Captions	Legendas
+studio.rail	History	Histórico
+studio.rail	Info	Info
+studio.rail	Markers	Marcadores
+studio.rail	Panels	Painéis
