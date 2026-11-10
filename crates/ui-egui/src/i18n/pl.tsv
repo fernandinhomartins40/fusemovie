@@ -12,7 +12,7 @@
 # sekwencja, panel = panel, workspace = obszar roboczy, keyframe = klatka kluczowa, caption = napis,
 # preferences = preferencje. Edit types keep their established names (ripple, roll, slip, slide).
 
-	About FilmCraft	O programie FilmCraft
+	About {app}	O programie {app}
 	Add Audio Submix Track	Dodaj ścieżkę submiksu audio
 	Add Caption at Playhead	Dodaj napis w miejscu głowicy
 	Add Chapter Marker…	Dodaj znacznik rozdziału…
@@ -38,7 +38,6 @@
 	Apply Default Transitions to Selection	Zastosuj domyślne przejścia do zaznaczenia
 	Apply Video Transition	Zastosuj przejście wideo
 	Arrange	Rozmieść
-	ArtCraft Website	Strona ArtCraft
 	Assembly	Montaż wstępny
 	Attach Proxies…	Dołącz proxy…
 	Audio Channels…	Kanały audio…
@@ -131,9 +130,6 @@
 	File	Plik
 	File…	Plik…
 	Fill frame	Wypełnij klatkę
-	FilmCraft Help…	Pomoc FilmCraft…
-	FilmCraft on GitHub	FilmCraft w serwisie GitHub
-	FilmCraft on getartcraft.com	FilmCraft w getartcraft.com
 	Find Next	Znajdź następny
 	Find…	Znajdź…
 	Fit	Dopasuj
@@ -177,7 +173,6 @@
 	Insert Frame Hold Segment	Wstaw segment stopklatki
 	Install Motion Graphics Template…	Zainstaluj szablon grafiki ruchomej…
 	Interpret Footage…	Interpretuj materiał…
-	Join the ArtCraft Discord…	Dołącz do Discorda ArtCraft…
 	Keyboard Shortcuts…	Skróty klawiaturowe…
 	Label	Etykieta
 	Labels…	Etykiety…
@@ -271,7 +266,6 @@
 	Render Selection	Renderuj zaznaczenie
 	Replace Fonts in Projects…	Zastąp czcionki w projektach…
 	Replace With Clip	Zastąp klipem
-	Report an Issue…	Zgłoś problem…
 	Reset All Parameters	Resetuj wszystkie parametry
 	Reset Duration	Resetuj czas trwania
 	Reset to Saved Layout	Przywróć zapisany układ
@@ -306,7 +300,7 @@
 	Select Previous Graphic	Zaznacz poprzednią grafikę
 	Select Previous Layer	Zaznacz poprzednią warstwę
 	Selection Follows Playhead	Zaznaczenie podąża za głowicą
-	Selection as FilmCraft Project…	Zaznaczenie jako projekt FilmCraft…
+	Selection as {app} Project…	Zaznaczenie jako projekt {app}…
 	Selection…	Zaznaczenie…
 	Send Backward	Przesuń do tyłu
 	Send to Back	Przenieś pod spód
@@ -372,7 +366,6 @@
 	Master volume: use the Audio Track Mixer	Głośność główna: użyj miksera ścieżek audio
 	Search	Szukaj
 	Quick Export	Szybki eksport
-	Join the ArtCraft Discord (discord.gg/artcraft)	Dołącz do Discorda ArtCraft (discord.gg/artcraft)
 	Cancel	Anuluj
 	OK	OK
 	Interpret Footage	Interpretuj materiał
@@ -415,10 +408,7 @@
 	Delete Caption Track	Usuń ścieżkę napisów
 	Delete Empty Caption Tracks	Usuń puste ścieżki napisów
 	Version {version}	Wersja {version}
-	A clean-room, pure-Rust non-linear video editor. Part of the ArtCraft family.	Niezależnie stworzony nieliniowy edytor wideo w czystym Ruście. Część rodziny ArtCraft.
-	Join the ArtCraft Discord	Dołącz do Discorda ArtCraft
-	Source code on GitHub	Kod źródłowy w serwisie GitHub
-	Report an issue	Zgłoś problem
+	A clean-room, pure-Rust non-linear video editor.	Niezależnie stworzony nieliniowy edytor wideo w czystym Ruście.
 	MIT OR Apache-2.0. Fonts: Inter, Noto Serif and JetBrains Mono (SIL OFL 1.1).	MIT LUB Apache-2.0. Czcionki: Inter, Noto Serif i JetBrains Mono (SIL OFL 1.1).
 	just now	przed chwilą
 	{n} s ago	{n} s temu
@@ -436,8 +426,8 @@
 	No background jobs.	Brak zadań w tle.
 	Recover Unsaved Changes	Odzyskaj niezapisane zmiany
 	Untitled	Bez tytułu
-	FilmCraft was closed while “{name}” had unsaved changes.	FilmCraft został zamknięty, gdy „{name}” miał niezapisane zmiany.
-	FilmCraft quit unexpectedly while “{name}” had unsaved changes.	FilmCraft nieoczekiwanie zakończył działanie, gdy „{name}” miał niezapisane zmiany.
+	{app} was closed while “{name}” had unsaved changes.	{app} został zamknięty, gdy „{name}” miał niezapisane zmiany.
+	{app} quit unexpectedly while “{name}” had unsaved changes.	{app} nieoczekiwanie zakończył działanie, gdy „{name}” miał niezapisane zmiany.
 	Recover unsaved changes from {when}?	Odzyskać niezapisane zmiany z {when}?
 	The project had not been saved yet.	Projekt nie był jeszcze zapisany.
 	{n} sessions have unsaved changes:	Sesje z niezapisanymi zmianami: {n}
@@ -456,8 +446,6 @@
 	A cut sequence with transitions, effects and music	Zmontowana sekwencja z przejściami, efektami i muzyką
 	Bars and Tone	Pasy i ton
 	SMPTE HD bars with 1 kHz reference tone	Pasy SMPTE HD z tonem odniesienia 1 kHz
-	Community	Społeczność
-	Join us on Discord	Dołącz do nas na Discordzie
 	OMF Export Settings	Ustawienia eksportu OMF
 	AAF Export Settings	Ustawienia eksportu AAF
 	OMF Title:	Tytuł OMF:
@@ -964,7 +952,7 @@
 	Font family	Rodzina czcionek
 	Label Colors	Kolory etykiet
 	Decoded frames held for the monitors and thumbnails: {used} of {budget}.	Zdekodowane klatki dla monitorów i miniatur: {used} z {budget}.
-	FilmCraft keeps the rest of the RAM free for other applications.	FilmCraft pozostawia resztę pamięci RAM wolną dla innych aplikacji.
+	{app} keeps the rest of the RAM free for other applications.	{app} pozostawia resztę pamięci RAM wolną dla innych aplikacji.
 	not available in this session	niedostępne w tej sesji
 	Currently: {loc} — {files} file(s), {size}	Obecnie: {loc} — pliki: {files}, {size}
 	 ({ch} output channels)	 (kanały wyjściowe: {ch})
@@ -1075,7 +1063,7 @@
 	Video Frame	Klatka wideo
 	Pin To	Przypnij do
 	Pinned Edges	Przypięte krawędzie
-	FilmCraft Graphics Template	Szablon grafiki FilmCraft
+	{app} Graphics Template	Szablon grafiki {app}
 	{n} Font	{n} — czcionka
 	{n} Size	{n} — rozmiar
 	{n} Color	{n} — kolor
@@ -1085,7 +1073,7 @@
 	Export As Motion Graphics Template	Eksportuj jako szablon grafiki ruchomej
 	Category:	Kategoria:
 	Editable properties:	Edytowalne właściwości:
-	Saved as a FilmCraft graphics template (.fcgt) in your templates folder.	Zapisano jako szablon grafiki FilmCraft (.fcgt) w folderze szablonów.
+	Saved as a {app} graphics template (.fcgt) in your templates folder.	Zapisano jako szablon grafiki {app} (.fcgt) w folderze szablonów.
 	Exported graphics template to {path}	Wyeksportowano szablon grafiki do {path}
 	Replace Fonts in Projects	Zastąp czcionki w projektach
 	Fonts used in the project:	Czcionki użyte w projekcie:
@@ -1455,7 +1443,7 @@
 	Center of Sphere	Środek kuli
 	Cents	Centy
 	Change to Color	Zmień na kolor
-	Changes are copied in the background a moment after each edit. If FilmCraft quits unexpectedly, they are offered the next time it starts.	Zmiany są kopiowane w tle chwilę po każdej edycji. Jeśli FilmCraft nieoczekiwanie się zamknie, zostaną zaproponowane przy następnym uruchomieniu.
+	Changes are copied in the background a moment after each edit. If {app} quits unexpectedly, they are offered the next time it starts.	Zmiany są kopiowane w tle chwilę po każdej edycji. Jeśli {app} nieoczekiwanie się zamknie, zostaną zaproponowane przy następnym uruchomieniu.
 	Channel	Kanał
 	Channel Blur	Rozmycie kanałów
 	Channel Mix	Miks kanałów
@@ -1828,7 +1816,7 @@
 	Hard Limiter	Twardy limiter
 	Hard Mix	Twarde mieszanie
 	Hardware decoding	Dekodowanie sprzętowe
-	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API or NVDEC for H.264 and HEVC on Linux) for the streams it supports, and FilmCraft's own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Dekodowanie sprzętowe: Auto używa systemowego dekodera wideo (VideoToolbox w macOS, Media Foundation w Windows, VA-API lub NVDEC dla H.264 i HEVC w Linuksie) dla obsługiwanych strumieni, a własnego dekodera FilmCraft dla pozostałych lub gdy sprzęt zawiedzie. Już otwarte multimedia zachowują swój dekoder do ponownego otwarcia.
+	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API or NVDEC for H.264 and HEVC on Linux) for the streams it supports, and {app}'s own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Dekodowanie sprzętowe: Auto używa systemowego dekodera wideo (VideoToolbox w macOS, Media Foundation w Windows, VA-API lub NVDEC dla H.264 i HEVC w Linuksie) dla obsługiwanych strumieni, a własnego dekodera {app} dla pozostałych lub gdy sprzęt zawiedzie. Już otwarte multimedia zachowują swój dekoder do ponownego otwarcia.
 	Head Size	Rozmiar głowy
 	Heart	Serce
 	Height	Wysokość
@@ -2103,7 +2091,7 @@
 	Night	Noc
 	No Motion	Bez ruchu
 	No Scroll	Bez przewijania
-	No plugins are installed. Changes will take effect the next time you start FilmCraft.	Brak zainstalowanych wtyczek. Zmiany zaczną działać przy następnym uruchomieniu FilmCraft.
+	No plugins are installed. Changes will take effect the next time you start {app}.	Brak zainstalowanych wtyczek. Zmiany zaczną działać przy następnym uruchomieniu {app}.
 	Noise	Szum
 	Noise & Grain	Szum i ziarno
 	Noise (Legacy)	Szum (starszy)
@@ -2534,7 +2522,7 @@
 	Template Properties	Właściwości szablonu
 	Text Animator	Animator tekstu
 	Text Color	Kolor tekstu
-	The media cache holds render previews of unsaved projects and other files FilmCraft can recreate. Deleting them is always safe; FilmCraft rebuilds them as needed.	Pamięć podręczna multimediów zawiera podglądy renderowania niezapisanych projektów i inne pliki, które FilmCraft może odtworzyć. Ich usunięcie jest zawsze bezpieczne; FilmCraft odbuduje je w razie potrzeby.
+	The media cache holds render previews of unsaved projects and other files {app} can recreate. Deleting them is always safe; {app} rebuilds them as needed.	Pamięć podręczna multimediów zawiera podglądy renderowania niezapisanych projektów i inne pliki, które {app} może odtworzyć. Ich usunięcie jest zawsze bezpieczne; {app} odbuduje je w razie potrzeby.
 	Thickness	Grubość
 	Tile Gradient	Kafelkowy gradient
 	Tilt	Pochylenie
@@ -2744,7 +2732,7 @@
 	System Compatibility Report	Raport zgodności systemu
 	no GPU adapter: the CPU compositor is used	brak adaptera GPU: używany jest kompozytor CPU
 	Avid Log Exchange	Avid Log Exchange
-	FilmCraft Project	Projekt FilmCraft
+	{app} Project	Projekt {app}
 	{name} Selection.fcproj	{name} — zaznaczenie.fcproj
 	{name} (Simplified)	{name} (uproszczona)
 	Find in:	Znajdź w:
@@ -2884,7 +2872,7 @@
 	Start Queue	Uruchom kolejkę
 	Stop	Zatrzymaj
 	Clear Finished	Wyczyść zakończone
-	Not supported by FilmCraft's encoders yet	Jeszcze nieobsługiwane przez kodery FilmCraft
+	Not supported by {app}'s encoders yet	Jeszcze nieobsługiwane przez kodery {app}
 	Sequence name	Nazwa sekwencji
 	Folder	Folder
 	Preset	Ustawienie
@@ -2974,9 +2962,8 @@
 	Drag a clip to slide it between its neighbours.	Przeciągnij klip, aby przesunąć go między sąsiadami.
 	Drag to scroll the timeline.	Przeciągnij, aby przewinąć oś czasu.
 	Click to zoom in; Opt-click to zoom out.	Kliknij, aby powiększyć; Opt-klik, aby pomniejszyć.
-	FilmCraft hit an error	FilmCraft napotkał błąd
+	{app} hit an error	{app} napotkał błąd
 	Details: {path}	Szczegóły: {path}
-	Opened {url}	Otwarto {url}
 	(empty)	(puste)
 	Step Back 1 Frame	Cofnij o 1 klatkę
 	Step Forward 1 Frame	Do przodu o 1 klatkę
@@ -3233,7 +3220,7 @@
 	QuickTime, ProRes 4444 (4:4:4) with alpha channel, 24-bit 48 kHz PCM	QuickTime, ProRes 4444 (4:4:4) z kanałem alfa, PCM 24-bit 48 kHz
 	QuickTime, ProRes 4444 XQ (4:4:4), 24-bit 48 kHz PCM	QuickTime, ProRes 4444 XQ (4:4:4), PCM 24-bit 48 kHz
 	QuickTime, ProRes 422, 24-bit 48 kHz PCM	QuickTime, ProRes 422, PCM 24-bit 48 kHz
-	Quit FilmCraft	Zakończ FilmCraft
+	Quit {app}	Zakończ {app}
 	Rate Stretch Tool	Narzędzie Rozciąganie szybkości
 	Razor Tool	Narzędzie Żyletka
 	Rectangle Tool	Narzędzie Prostokąt
@@ -3535,8 +3522,8 @@
 	Composite in Linear Color	Kompozytuj w kolorze liniowym
 	Auto Tone Map Media (HDR and log into SDR)	Automatyczne mapowanie tonów multimediów (HDR i log do SDR)
 	Configure…	Konfiguruj…
-	Not supported in FilmCraft yet	Jeszcze nieobsługiwane w FilmCraft
-	FilmCraft always composites in linear light	FilmCraft zawsze kompozytuje w świetle liniowym
+	Not supported in {app} yet	Jeszcze nieobsługiwane w {app}
+	{app} always composites in linear light	{app} zawsze kompozytuje w świetle liniowym
 	Loop marked range	Zapętl oznaczony zakres
 	Play Source	Odtwórz źródło
 	Source Play/Stop	Odtwórz/zatrzymaj źródło
@@ -3596,12 +3583,11 @@
 	Opens in your web browser: {url}	Otwiera w przeglądarce: {url}
 	Saves this session's log and shows it in your file manager.	Zapisuje dziennik tej sesji i pokazuje go w menedżerze plików.
 	Shows a report on this computer.	Pokazuje raport o tym komputerze.
-	Shows the version, community links and credits in a FilmCraft window.	Pokazuje wersję, linki społeczności i współtwórców w oknie FilmCraft.
 	Couldn't open your web browser	Nie udało się otworzyć przeglądarki
 	Open this address in your browser yourself:	Otwórz ten adres w przeglądarce samodzielnie:
-	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API for H.264 and HEVC on Linux) for the streams it supports, and FilmCraft's own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Dekodowanie sprzętowe: Auto używa systemowego dekodera wideo (VideoToolbox w macOS, Media Foundation w Windows, VA-API dla H.264 i HEVC w Linuksie) dla obsługiwanych strumieni, a własnego dekodera FilmCraft dla pozostałych lub gdy sprzęt zawiedzie. Już otwarte multimedia zachowują swój dekoder do ponownego otwarcia.
+	Hardware decoding: Auto uses the system's video decoder (VideoToolbox on macOS, Media Foundation on Windows, VA-API for H.264 and HEVC on Linux) for the streams it supports, and {app}'s own decoder for everything else or if the hardware fails. Media that is already open keeps its decoder until it is reopened.	Dekodowanie sprzętowe: Auto używa systemowego dekodera wideo (VideoToolbox w macOS, Media Foundation w Windows, VA-API dla H.264 i HEVC w Linuksie) dla obsługiwanych strumieni, a własnego dekodera {app} dla pozostałych lub gdy sprzęt zawiedzie. Już otwarte multimedia zachowują swój dekoder do ponownego otwarcia.
 	Settings	Ustawienia
-	Hide FilmCraft	Ukryj FilmCraft
+	Hide {app}	Ukryj {app}
 	Hide Others	Ukryj pozostałe
 # Added 2026-10-29: strings main gained since the catalog was written.
 	Delete Redoable Actions	Usuń akcje do ponowienia
@@ -3619,8 +3605,8 @@
 	Open a sequence to search its graphics	Otwórz sekwencję, aby przeszukać jej grafiki
 	No text graphics in this sequence. Add text with the Type tool.	Ta sekwencja nie zawiera grafik z tekstem. Dodaj tekst narzędziem Tekst.
 	No matching text.	Brak pasującego tekstu.
-	H.265 (HEVC) needs a hardware encoder (NVENC on NVIDIA GPUs, VideoToolbox on macOS); none was found on this machine, and FilmCraft has no software H.265 encoder yet. Choose H.264 or ProRes instead.	H.265 (HEVC) wymaga sprzętowego kodera (NVENC na kartach NVIDIA, VideoToolbox w macOS); na tym komputerze nie znaleziono żadnego, a FilmCraft nie ma jeszcze programowego kodera H.265. Wybierz H.264 lub ProRes.
-	AV1 needs a hardware encoder; none was found on this machine, and FilmCraft has no software AV1 encoder yet.	AV1 wymaga sprzętowego kodera; na tym komputerze nie znaleziono żadnego, a FilmCraft nie ma jeszcze programowego kodera AV1.
+	H.265 (HEVC) needs a hardware encoder (NVENC on NVIDIA GPUs, VideoToolbox on macOS); none was found on this machine, and {app} has no software H.265 encoder yet. Choose H.264 or ProRes instead.	H.265 (HEVC) wymaga sprzętowego kodera (NVENC na kartach NVIDIA, VideoToolbox w macOS); na tym komputerze nie znaleziono żadnego, a {app} nie ma jeszcze programowego kodera H.265. Wybierz H.264 lub ProRes.
+	AV1 needs a hardware encoder; none was found on this machine, and {app} has no software AV1 encoder yet.	AV1 wymaga sprzętowego kodera; na tym komputerze nie znaleziono żadnego, a {app} nie ma jeszcze programowego kodera AV1.
 
 # Export: H.264 High 10 and all-intra (#1221).
 	High 10	High 10

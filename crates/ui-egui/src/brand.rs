@@ -96,6 +96,32 @@ mod tests {
         assert!(files > 100, "scanned {files} files");
     }
 
+    /// `{app}` in UI text and catalogs is filled with the product name in every language, and no
+    /// catalog spells out the upstream name.
+    #[test]
+    fn brand_fills_app_in_every_language() {
+        use crate::i18n::Language;
+        for l in Language::ALL {
+            for s in ["About {app}", "Quit {app}", "{app} hit an error", "An untranslated {app} label"] {
+                let shown = l.tr(s);
+                assert!(shown.contains(APP_NAME) && !shown.contains("{app}"), "{}: {s} → {shown}", l.code());
+            }
+        }
+        assert_eq!(Language::En.tr("About {app}"), format!("About {APP_NAME}"));
+        assert_eq!(Language::PtBr.tr("About {app}"), format!("Sobre o {APP_NAME}"));
+        crate::i18n::set_current(Language::En);
+        assert_eq!(crate::i18n::t("{app} Project"), format!("{APP_NAME} Project"));
+        let mut dir = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/src/i18n")).into_iter().flatten().flatten().map(|e| e.path()).collect::<Vec<_>>();
+        dir.retain(|p| p.extension().is_some_and(|e| e == "tsv"));
+        assert!(dir.len() > 10);
+        for p in dir {
+            let text = std::fs::read_to_string(&p).unwrap_or_default();
+            for line in text.lines().filter(|l| !l.starts_with('#')) {
+                assert!(!line.contains("FilmCraft") && !line.contains("ArtCraft"), "{}: {line}", p.display());
+            }
+        }
+    }
+
     #[test]
     fn brand_wordmark_draws_the_icon_and_name() {
         let ctx = egui::Context::default();
