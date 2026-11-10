@@ -147,7 +147,7 @@ pub(crate) fn drop_files(app: &mut FilmcraftApp, ctx: &egui::Context, paths: &[S
 }
 
 /// A row on the rail: an icon and a label, the amber pill when `selected`, faint when disabled.
-fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, id: &str, icon: Icon, label: &str, selected: bool, enabled: bool) -> Response {
+fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, label): (&str, Icon, &str), selected: bool, enabled: bool) -> Response {
     let resp = ui.interact(rect, egui::Id::unique(("studio-home-rail", id)), if enabled { Sense::click() } else { Sense::hover() });
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, label));
     app.auto.add(&format!("home.rail.{id}"), rect, label);
@@ -176,26 +176,26 @@ fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut 
     let x = rail.left() + 10.0..=rail.right() - 10.0;
     let row = |y: f32| Rect::from_x_y_ranges(x.clone(), y..=y + 36.0);
     let top = rail.top() + 60.0;
-    rail_item(app, ui, row(top), "home", Icon::Home, tl!("Home"), true, true);
-    if rail_item(app, ui, row(top + 42.0), "newProject", Icon::Plus, tl!("New Project"), false, true).clicked() {
+    rail_item(app, ui, row(top), ("home", Icon::Home, tl!("Home")), true, true);
+    if rail_item(app, ui, row(top + 42.0), ("newProject", Icon::Plus, tl!("New Project")), false, true).clicked() {
         *act = Some(Act::NewProject);
     }
-    if rail_item(app, ui, row(top + 84.0), "open", Icon::Folder, tl!("Open Project"), false, true).clicked() {
+    if rail_item(app, ui, row(top + 84.0), ("open", Icon::Folder, tl!("Open Project")), false, true).clicked() {
         *act = Some(Act::Open);
     }
     let ai = row(top + 126.0);
-    rail_item(app, ui, ai, "createAi", Icon::Sparkle, tl!("Create with AI"), false, false).on_hover_text(tl!("Coming soon"));
+    rail_item(app, ui, ai, ("createAi", Icon::Sparkle, tl!("Create with AI")), false, false).on_hover_text(tl!("Coming soon"));
     let foot = rail.bottom() - 50.0;
     if foot > ai.bottom() + 16.0 {
         ui.painter().hline(x.clone(), foot - 8.0, Stroke::new(1.0, PAL.border));
-        if rail_item(app, ui, row(foot), "settings", Icon::Gear, tl!("Settings"), false, true).clicked() {
+        if rail_item(app, ui, row(foot), ("settings", Icon::Gear, tl!("Settings")), false, true).clicked() {
             *act = Some(Act::Settings);
         }
     }
 }
 
 /// A rounded icon + label button `h` tall at `min`: amber when `primary`, a card otherwise.
-pub(super) fn button(app: &mut FilmcraftApp, ui: &mut egui::Ui, min: egui::Pos2, h: f32, id: &str, label: &str, icon: Option<Icon>, primary: bool) -> Response {
+pub(super) fn button(app: &mut FilmcraftApp, ui: &mut egui::Ui, (min, h): (egui::Pos2, f32), id: &str, label: &str, icon: Option<Icon>, primary: bool) -> Response {
     let font = if primary { Tokens::semibold(14.0) } else { Tokens::ui(13.5) };
     let ink = if primary { PAL.primary_text } else { PAL.text };
     let galley = ui.painter().layout_no_wrap(label.to_owned(), font, ink);
@@ -235,11 +235,11 @@ fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, a
     y += paragraph(ui, pos2(left.left(), y), left.width(), &sub, Tokens::ui(14.0), PAL.text_dim);
     y += if c { 16.0 } else { 24.0 };
     let bh = if c { 36.0 } else { 40.0 };
-    let new = button(app, ui, pos2(left.left(), y), bh, "home.newProject", tl!("New Project"), Some(Icon::Plus), true);
+    let new = button(app, ui, (pos2(left.left(), y), bh), "home.newProject", tl!("New Project"), Some(Icon::Plus), true);
     if new.clicked() {
         *act = Some(Act::NewProject);
     }
-    if button(app, ui, pos2(new.rect.right() + 10.0, y), bh, "home.open", tl!("Open Project"), Some(Icon::Folder), false).clicked() {
+    if button(app, ui, (pos2(new.rect.right() + 10.0, y), bh), "home.open", tl!("Open Project"), Some(Icon::Folder), false).clicked() {
         *act = Some(Act::Open);
     }
     y += bh + if c { 18.0 } else { 26.0 };

@@ -153,12 +153,12 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
 
     // Foot: Back, the summary, Create.
     let bh = if c { 34.0 } else { 36.0 };
-    let back = button(app, ui, pos2(foot.left() + 20.0, foot.center().y - bh / 2.0), bh, "newDoc.back", tl!("Back"), None, false);
+    let back = button(app, ui, (pos2(foot.left() + 20.0, foot.center().y - bh / 2.0), bh), "newDoc.back", tl!("Back"), None, false);
     let ch = if c { 38.0 } else { 42.0 };
     let label = tl!("Create");
     let cw = ui.painter().layout_no_wrap(label.to_owned(), Tokens::semibold(14.0), PAL.text).size().x + 24.0 + 36.0;
     let create_at = pos2(foot.right() - 20.0 - cw, foot.center().y - ch / 2.0);
-    let made = button(app, ui, create_at, ch, "newDoc.create", label, Some(Icon::Plus), true);
+    let made = button(app, ui, (create_at, ch), "newDoc.create", label, Some(Icon::Plus), true);
     let text = if d.error.is_empty() { summary(&d) } else { d.error.clone() };
     let color = if d.error.is_empty() { PAL.text_dim } else { app.tokens.danger };
     let room = Rect::from_min_max(pos2(back.rect.right() + 20.0, foot.top()), pos2(made.rect.left() - 20.0, foot.bottom()));
@@ -357,7 +357,7 @@ fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, 
             }
         });
         field_label(ui, tl!("Frame Rate"));
-        let r = egui::ComboBox::from_id_salt("studio-newdoc-fps").width(w).selected_text(format!("{} fps", fps_label(d.fps))).show_ui(ui, |ui| {
+        let r = craft_ui::ComboBox::from_id_salt("studio-newdoc-fps").width(w).selected_text(format!("{} fps", fps_label(d.fps))).show_ui(ui, |ui| {
             for f in RATES {
                 ui.selectable_value(&mut d.fps, f, format!("{} fps", fps_label(f)));
             }
@@ -365,12 +365,12 @@ fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, 
         app.auto.add_response("newDoc.fps", &r.response, tl!("Frame Rate"));
         field_label(ui, tl!("Pixel Aspect Ratio"));
         ui.add_enabled_ui(false, |ui| {
-            egui::ComboBox::from_id_salt("studio-newdoc-par").width(w).selected_text(tl!("Square Pixels (1.0)")).show_ui(ui, |_| {});
+            craft_ui::ComboBox::from_id_salt("studio-newdoc-par").width(w).selected_text(tl!("Square Pixels (1.0)")).show_ui(ui, |_| {});
         })
         .response
         .on_disabled_hover_text(tl!("Sequences use square pixels"));
         field_label(ui, tl!("Audio Sample Rate"));
-        let r = egui::ComboBox::from_id_salt("studio-newdoc-rate").width(w).selected_text(format!("{} Hz", d.sample_rate)).show_ui(ui, |ui| {
+        let r = craft_ui::ComboBox::from_id_salt("studio-newdoc-rate").width(w).selected_text(format!("{} Hz", d.sample_rate)).show_ui(ui, |ui| {
             for s in SAMPLE_RATES {
                 ui.selectable_value(&mut d.sample_rate, s, format!("{s} Hz"));
             }
