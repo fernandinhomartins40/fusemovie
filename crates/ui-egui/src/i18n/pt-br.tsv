@@ -3700,3 +3700,37 @@ studio.rail	History	Histórico
 studio.rail	Info	Info
 studio.rail	Markers	Marcadores
 studio.rail	Panels	Painéis
+	New Project	Novo projeto
+	Open Project	Abrir projeto
+	Create with AI	Criar com IA
+	Coming soon	Em breve
+	What shall we create today?	O que vamos criar hoje?
+	Start a new {name} project, open one, or drop media to begin.	Comece um projeto novo no {name}, abra um ou arraste mídia para começar.
+	Nothing to import: drop video, audio or image files	Nada para importar: arraste arquivos de vídeo, áudio ou imagem
+	Drop video, audio or images to start a project	Arraste vídeo, áudio ou imagens para começar um projeto
+	or	ou
+	open a project	abra um projeto
+	Your recent projects will appear here.	Seus projetos recentes aparecerão aqui.
+	Start with a format	Começar com um formato
+	YouTube 1080p 16:9	YouTube 1080p 16:9
+	4K UHD	4K UHD
+	Cinema 2.39:1	Cinema 2.39:1
+	Full HD	Full HD
+	Reels, TikTok, Shorts	Reels, TikTok, Shorts
+	Feed	Feed
+	Scope	Scope
+	Save or discard the changes to the open project first	Salve ou descarte antes as alterações do projeto aberto
+	The folder {path} does not exist	A pasta {path} não existe
+	A project name cannot contain a folder separator	O nome do projeto não pode conter um separador de pasta
+	{path} already exists: choose another name or folder	{path} já existe: escolha outro nome ou pasta
+	Back	Voltar
+	Create	Criar
+	Choose a format	Escolha um formato
+	Presets ({n})	Predefinições ({n})
+	Set up your next project.	Prepare seu próximo projeto.
+	Pick a format, adjust the settings and create your project.	Escolha um formato, ajuste as configurações e crie seu projeto.
+	Project settings	Configurações do projeto
+	Not saved yet	Ainda não salvo
+	Pixel Aspect Ratio	Proporção de pixels
+	Sequences use square pixels	As sequências usam pixels quadrados
+	Audio Sample Rate	Taxa de amostragem de áudio

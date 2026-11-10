@@ -20,7 +20,9 @@ use crate::dock::PanelKind;
 use crate::state;
 
 pub mod bottom;
+pub(crate) mod home;
 pub mod mode_bar;
+pub(crate) mod new_doc;
 pub mod right;
 pub mod style;
 pub mod tools;
@@ -154,9 +156,10 @@ pub fn frame(app: &mut FilmcraftApp, ui: &mut egui::Ui, full: Rect) {
     let r = regions(full, compact, codex, app.studio.strip_frac);
     if home_wanted(app) {
         top_bar::show(app, ui, r.top);
-        // integrator: home::show — the Home page replaces this placeholder (the classic Import page).
         let body = Rect::from_min_max(r.top.left_bottom(), full.max);
-        crate::panels::import_mode::show(app, ui, body);
+        let mut child = ui.new_child(egui::UiBuilder::new().max_rect(body).id_salt("studio-home").layout(egui::Layout::top_down(egui::Align::Min)));
+        child.set_clip_rect(body.intersect(ui.clip_rect()));
+        home::show(app, &mut child);
         return;
     }
     follow_focus(app, ui, &r);
