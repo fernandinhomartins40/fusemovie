@@ -155,12 +155,12 @@ pub fn parse_prfpset(text: &str) -> Result<PrfpsetImport, String> {
             if !unsupported.is_empty() {
                 let shown = unsupported.iter().take(6).cloned().collect::<Vec<_>>().join(", ");
                 let more = if unsupported.len() > 6 { format!(" and {} more", unsupported.len() - 6) } else { String::new() };
-                out.warnings.push(format!("{}: effects not supported by FilmCraft: {shown}{more}", preset.name));
+                out.warnings.push(format!("{}: effects not supported here: {shown}{more}", preset.name));
             }
             if !dropped.is_empty() {
                 let shown = dropped.iter().take(6).cloned().collect::<Vec<_>>().join(", ");
                 let more = if dropped.len() > 6 { format!(" and {} more", dropped.len() - 6) } else { String::new() };
-                out.warnings.push(format!("{}: parameters not supported by FilmCraft: {shown}{more}", preset.name));
+                out.warnings.push(format!("{}: parameters not supported here: {shown}{more}", preset.name));
             }
         }
     }
@@ -397,7 +397,7 @@ fn parse_item<'a, 'input>(
 
     if effects.is_empty() {
         let reason =
-            if unsupported.is_empty() { "the preset has no effect data".to_string() } else { "none of its effects are supported by FilmCraft".to_string() };
+            if unsupported.is_empty() { "the preset has no effect data".to_string() } else { "none of its effects are supported here".to_string() };
         return Err(SkippedPreset { name: name.to_string(), effects: unsupported, reason });
     }
 

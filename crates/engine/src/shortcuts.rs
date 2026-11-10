@@ -1098,7 +1098,7 @@ fn read_file(path: &Path) -> std::result::Result<PresetFile, String> {
     // FilmCraft's own format, whatever the file is called (an export may be named anything)
     let parsed = serde_json::from_slice::<PresetFile>(&bytes)
         .map_err(|e| e.to_string())
-        .and_then(|f| if f.format == FILE_FORMAT { Ok(f) } else { Err("not a FilmCraft keyboard shortcuts file".into()) });
+        .and_then(|f| if f.format == FILE_FORMAT { Ok(f) } else { Err("not a keyboard shortcuts file of this app".into()) });
     parsed.map_err(|why| {
         // Premiere Pro's own shortcut files (#2489): say so, instead of a JSON parse error
         if path.extension().is_some_and(|e| e.eq_ignore_ascii_case("kys")) {

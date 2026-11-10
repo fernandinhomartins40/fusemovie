@@ -212,12 +212,12 @@ impl Default for GraphicsTemplate {
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum TemplateError {
     #[error(
-        "this file is a ZIP archive (an Adobe .mogrt or another application's package?): FilmCraft does not read motion graphics templates from other applications, only its own .fcgt graphics templates"
+        "this file is a ZIP archive (an Adobe .mogrt or another application's package?): this app does not read motion graphics templates from other applications, only its own .fcgt graphics templates"
     )]
     ForeignPackage,
-    #[error("not a FilmCraft graphics template: {0}")]
+    #[error("not a graphics template of this app: {0}")]
     NotTemplate(String),
-    #[error("this graphics template was made by a newer FilmCraft (format version {0}; this build reads up to {TEMPLATE_VERSION})")]
+    #[error("this graphics template was made by a newer version of the app (format version {0}; this build reads up to {TEMPLATE_VERSION})")]
     TooNew(u32),
     #[error("invalid graphics template: {0}")]
     Invalid(String),

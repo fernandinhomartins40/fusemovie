@@ -74,10 +74,10 @@ pub const OLDEST_SCHEMA: u32 = 1;
 
 #[derive(Debug, thiserror::Error)]
 pub enum FormatError {
-    #[error("not a FilmCraft project: {0}")]
+    #[error("not a project file of this app: {0}")]
     NotAProject(String),
     #[error(
-        "this project was saved by a newer version of FilmCraft (project schema v{found}); this build reads up to v{supported}. Update FilmCraft to open it."
+        "this project was saved by a newer version of the app (project schema v{found}); this build reads up to v{supported}. Update the app to open it."
     )]
     TooNew { found: u32, supported: u32 },
     #[error("project schema v{found} is too old for this build (oldest supported: v{oldest})")]
@@ -586,7 +586,7 @@ mod tests {
         v["schema_version"] = Value::from(SCHEMA_VERSION + 1);
         let e = decode(&serde_json::to_vec(&v).unwrap()).unwrap_err();
         assert!(matches!(e, FormatError::TooNew { .. }));
-        assert!(e.to_string().contains("newer version of FilmCraft"), "{e}");
+        assert!(e.to_string().contains("newer version of the app"), "{e}");
     }
 
     #[test]
