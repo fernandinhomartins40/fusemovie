@@ -144,7 +144,7 @@ fn search(app: &mut FilmcraftApp, ui: &mut egui::Ui, field: Rect) -> Option<Stri
         .take(MAX_RESULTS)
         .map(|it| {
             let path: Vec<&str> = it.path.iter().map(|s| crate::i18n::t(s)).collect();
-            (it.id, if path.is_empty() { it.label } else { format!("{} ▸ {}", path.join(" ▸ "), it.label) })
+            (it.id, if path.is_empty() { it.label } else { format!("{} › {}", path.join(" › "), it.label) })
         })
         .collect();
     let mut pick = None;
