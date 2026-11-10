@@ -88,8 +88,6 @@ egui = { version = "0.37", features = ["default_fonts", "monochrome_emoji_fonts"
 egui_extras = { version = "0.37", default-features = false }
 eframe = { version = "0.37", default-features = false }
 egui_kittest = "0.37"
-# craft-update: app-specific pretend versions apply to startup and manual checks.
-craft-update = { git = "https://github.com/storytold/craft-libs", version = "=0.1.0", rev = "1b34eba41e62138fc2438d2734523b302840b45d", features = ["egui"] }
 rfd = "0.17"
 
 [workspace.lints.rust]

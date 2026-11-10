@@ -73,13 +73,13 @@ fn ensure() -> Result<(), DevIconError> {
         break; // a dev entry from another checkout: fall through and rewrite it
     }
     for size in ICON_SIZES {
-        let rel = std::path::Path::new("hicolor").join(format!("{size}x{size}")).join("apps").join(format!("{}.png", crate::APP_ID));
-        let dest = user_dir.join("icons").join(&rel);
+        let dir = std::path::Path::new("hicolor").join(format!("{size}x{size}")).join("apps");
+        let dest = user_dir.join("icons").join(&dir).join(format!("{}.png", crate::APP_ID));
         if !dest.is_file()
             && let Some(parent) = dest.parent()
         {
             // The checkout this binary was built from; a missing icon only costs the icon.
-            let src = std::path::Path::new(ICON_DIR).join(&rel);
+            let src = std::path::Path::new(ICON_DIR).join(&dir).join(ICON_FILE);
             if !src.is_file() {
                 log::warn!("dev desktop entry: icon {} not found; skipping it", src.display());
                 continue;
@@ -90,7 +90,7 @@ fn ensure() -> Result<(), DevIconError> {
     }
     let applications = user_dir.join("applications");
     std::fs::create_dir_all(&applications).map_err(DevIconError::Io)?;
-    let body = desktop_file_content(crate::APP_ID, "FilmCraft", exe);
+    let body = desktop_file_content(crate::APP_ID, crate::APP_NAME, exe);
     std::fs::write(applications.join(&file_name), body).map_err(DevIconError::Io)?;
     Ok(())
 }
@@ -102,6 +102,8 @@ const ICON_SIZES: [u16; 2] = [256, 512];
 /// The app icons in the source tree this binary was built from (a path, not embedded bytes:
 /// the entry is a dev-checkout convenience and release binaries must not carry the PNGs).
 const ICON_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/app-icon");
+/// The icon's file name in the hicolor folders of `ICON_DIR` (installed under [`crate::APP_ID`]).
+const ICON_FILE: &str = "ai.storyteller.filmcraft.png";
 
 /// The user data dir we install into: `$XDG_DATA_HOME`, else `$HOME/.local/share` (XDG base
 /// directory spec). Untrusted environment: an empty or relative `XDG_DATA_HOME` means the

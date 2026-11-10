@@ -9,7 +9,7 @@
 //! preference key, e.g. `settings.timeline.stillImageDuration`), `settings.<key>.<value>` for the
 //! items of an open dropdown, `settings.<key>.browse` (folder fields), `settings.<key>.hex`
 //! (colour fields), `settings.labels.colors.<label>.name|color`, `settings.mediaCache.clean`,
-//! `settings.page` (the category's page), `settings.help`, `settings.reset`, `settings.cancel`,
+//! `settings.page` (the category's page), `settings.reset`, `settings.cancel`,
 //! `settings.ok`.
 
 use egui::{Align, Align2, Color32, CornerRadius, Frame, Layout, Margin, Rect, RichText, Sense, Stroke, Ui, vec2};
@@ -769,7 +769,7 @@ fn custom(app: &mut FilmcraftApp, ui: &mut Ui, d: &mut SettingsDraft, name: &str
         "memoryInfo" => {
             let (used, budget) = app.frames.cache_usage();
             note(ui, &t, &tlf!("Decoded frames held for the monitors and thumbnails: {used} of {budget}.", used = mb(used as u64), budget = mb(budget as u64)));
-            note(ui, &t, tl!("FilmCraft keeps the rest of the RAM free for other applications."));
+            note(ui, &t, tl!("{app} keeps the rest of the RAM free for other applications."));
         }
         "mediaCacheInfo" => {
             if d.cache_info.is_null() {
@@ -925,9 +925,6 @@ pub fn show(app: &mut FilmcraftApp, ctx: &egui::Context) -> bool {
         ui.add_space(14.0);
         ui.horizontal(|ui| {
             ui.add_space(20.0);
-            if button(app, ui, "settings.help", tl!("Help"), false) {
-                crate::links::open(app, ctx, &format!("{}/blob/main/docs/project-files.md#settings", crate::links::GITHUB));
-            }
             if button(app, ui, "settings.reset", tl!("Reset…"), false) {
                 // this category back to its defaults (OK applies it)
                 let defaults = filmcraft_engine::autosave::Preferences::default().to_value();

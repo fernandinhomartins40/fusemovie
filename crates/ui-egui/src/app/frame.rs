@@ -1,4 +1,4 @@
-use super::{FilmcraftApp, Tick, Tokens, crash, header, i18n, panels, state, updates_ui, widgets};
+use super::{FilmcraftApp, Tick, Tokens, crash, header, i18n, panels, state, widgets};
 
 impl FilmcraftApp {
     // ---------------------------------------------------------------- frame
@@ -75,7 +75,6 @@ impl FilmcraftApp {
         self.pending_timeline_drop = None;
         panels::dialogs::show(self, &ctx);
         panels::file_dialogs::show_overwrite(self, &ctx);
-        updates_ui::show(self, &ctx);
         if !self.ui.show_status_bar {
             return;
         }
@@ -231,7 +230,7 @@ impl FilmcraftApp {
     pub(super) fn error_window(&mut self, ctx: &egui::Context) {
         let Some(msg) = self.ui_error.clone() else { return };
         let mut close = false;
-        egui::Window::new(tl!("FilmCraft hit an error"))
+        egui::Window::new(tl!("{app} hit an error"))
             .id(egui::Id::unique("FilmCraft hit an error"))
             .collapsible(false)
             .resizable(false)

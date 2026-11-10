@@ -43,7 +43,6 @@ impl FilmcraftApp {
             hooks: HostHooks::default(),
             // Unsaved changes left by a session that died are offered first thing.
             dialog: recovery.then_some(Dialog::Recovery),
-            updates_rt: Default::default(),
             file_dialogs: Default::default(),
             native_dialog: None,
             overwrite_prompt: None,
@@ -276,7 +275,6 @@ impl FilmcraftApp {
         // a frame server rebuilt by sync_pool (another project opened) gets its wake-up now: no
         // poll asks for the next frame, so its finished frames would wait for the mouse (#2438 review)
         self.frames.set_context(ctx);
-        updates_ui::tick(self, ctx);
         #[cfg(not(target_arch = "wasm32"))]
         self.tick_media_refresh(ctx, now);
     }
@@ -510,8 +508,6 @@ impl eframe::App for FilmcraftApp {
         // Flush the recovery journal and stop the auto-save worker; a session with nothing unsaved
         // removes its journal, one with unsaved changes keeps it for the next launch.
         self.session.shutdown();
-        // An update waiting for the exit starts its install helper now.
-        crate::updates_ui::exiting(self);
     }
 
     /// Eframe's UI entry: begin this pass's IME reset state, suspend custom controls when no
