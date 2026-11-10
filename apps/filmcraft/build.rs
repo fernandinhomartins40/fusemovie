@@ -7,6 +7,7 @@
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=../../brand.env");
     println!("cargo:rerun-if-changed=../../assets/app-icon/filmcraft.ico");
     println!("cargo:rerun-if-env-changed=FILMCRAFT_REQUIRE_WINRES");
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
@@ -18,11 +19,16 @@ fn main() {
 #[cfg(windows)]
 mod windows {
     pub fn embed_resources() {
+        // The product name and company come from brand.env, the one place a rename happens.
+        let brand = std::fs::read_to_string("../../brand.env").unwrap_or_default();
+        let get = |k: &str| brand.lines().find_map(|l| l.strip_prefix(k)?.strip_prefix('=')).unwrap_or("").trim().to_owned();
+        let (name, company) = (get("BRAND_NAME"), get("BRAND_COMPANY"));
         let mut res = winresource::WindowsResource::new();
         res.set_icon("../../assets/app-icon/filmcraft.ico")
-            .set("ProductName", "FilmCraft")
-            .set("FileDescription", "FilmCraft video editor")
-            .set("LegalCopyright", "Copyright (c) the FilmCraft contributors. MIT OR Apache-2.0.")
+            .set("ProductName", &name)
+            .set("FileDescription", &format!("{name} video editor"))
+            .set("CompanyName", &company)
+            .set("LegalCopyright", &format!("Copyright (c) {company} and the FilmCraft contributors. MIT OR Apache-2.0."))
             .set("OriginalFilename", "filmcraft.exe")
             .set("InternalName", "filmcraft");
         if let Err(e) = res.compile() {

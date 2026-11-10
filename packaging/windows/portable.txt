@@ -1,0 +1,9 @@
+Portable mode
+
+While this file sits next to filmcraft.exe, the app keeps its preferences, presets,
+crash-recovery autosaves and startup state in the Data folder beside it, and writes nothing to
+%APPDATA% or %LOCALAPPDATA%. Copy the whole folder to move the app with its settings.
+
+Delete this file to use the normal per-user folders instead (a folder named after the app in
+%APPDATA% for settings, and in %LOCALAPPDATA% for crash-recovery autosaves). If Data can't be
+written (for example on a read-only drive), the app says so and uses those folders instead.

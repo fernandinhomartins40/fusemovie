@@ -21,6 +21,26 @@ fn main() {
     if let Err(e) = std::fs::write(&out, generate(&json, &people)) {
         println!("cargo::warning=writing {}: {e}", out.display());
     }
+    brand();
+}
+
+/// Export `brand.env` (repository root: product name, company, app id) as `FILMCRAFT_BRAND_*`
+/// compile-time variables for `brand.rs`, so the product name lives in one file.
+fn brand() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../brand.env");
+    println!("cargo:rerun-if-changed={}", path.display());
+    let text = match std::fs::read_to_string(&path) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("cargo::error=reading {}: {e}", path.display());
+            return;
+        }
+    };
+    for (key, value) in text.lines().filter(|l| !l.trim_start().starts_with('#')).filter_map(|l| l.split_once('=')) {
+        if let Some(name) = key.trim().strip_prefix("BRAND_") {
+            println!("cargo:rustc-env=FILMCRAFT_BRAND_{name}={}", value.trim());
+        }
+    }
 }
 
 fn read<T>(path: &std::path::Path, fallback: &str, parse: impl Fn(&str) -> Result<T, String>) -> Option<T> {

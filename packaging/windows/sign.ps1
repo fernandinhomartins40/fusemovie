@@ -23,6 +23,16 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+# Azure Trusted Signing loads this NuGet package's dlib into signtool, beside the signing secrets,
+# so the package is pinned to a reviewed version and SHA-256 and refused on any mismatch (#2936).
+# Upgrading is a deliberate change to both values: download
+# https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/<version> and record
+# (Get-FileHash -Algorithm SHA256 <file>).Hash.
+$TrustedSigningClient = @{
+  Version = '1.0.95'
+  Sha256  = '3BFCF1E0A3CB42AF1692F0A8ED45C15DE070C2DE86F28A59B2795D904D8A920F'
+}
+
 function Write-Warn([string] $Message) {
   if ($env:GITHUB_ACTIONS) { Write-Output "::warning::$Message" } else { Write-Warning $Message }
 }
@@ -55,9 +65,12 @@ if (-not $haveCert -and -not $haveAzure) {
 }
 
 $script:SignTool = Find-SignTool
-$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'FilmCraft', '/du', 'https://github.com/storytold/filmcraft')
-$tmp = Join-Path ([IO.Path]::GetTempPath()) "filmcraft-sign-$([IO.Path]::GetRandomFileName())"
-New-Item -ItemType Directory -Path $tmp | Out-Null
+# The signature's description is the product name, kept in one place (brand.env).
+. (Join-Path $PSScriptRoot 'brand.ps1')
+$productName = $Brand['NAME']
+$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', $productName)
+$tmp = Join-Path ([IO.Path]::GetTempPath()) "filmcraft-sign-$PID"
+New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
 try {
   if ($haveCert) {
@@ -73,14 +86,12 @@ try {
     Write-Output "Signing with Azure Trusted Signing ($env:AZURE_SIGNING_ACCOUNT / $env:AZURE_CERT_PROFILE): $($Files -join ', ')"
     # The dlib authenticates with DefaultAzureCredential, which reads AZURE_TENANT_ID,
     # AZURE_CLIENT_ID and AZURE_CLIENT_SECRET from the environment.
-    $trustedSigningVersion = '1.0.95'
-    $trustedSigningSha256 = '3bfcf1e0a3cb42af1692f0a8ed45c15de070c2de86f28a59b2795d904d8a920f'
     $pkg = Join-Path $tmp 'trusted-signing.zip'
-    $uri = "https://api.nuget.org/v3-flatcontainer/microsoft.trusted.signing.client/$trustedSigningVersion/microsoft.trusted.signing.client.$trustedSigningVersion.nupkg"
-    Invoke-WebRequest -Uri $uri -OutFile $pkg
-    $actualHash = (Get-FileHash -Path $pkg -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($actualHash -ne $trustedSigningSha256) {
-      throw "Microsoft.Trusted.Signing.Client $trustedSigningVersion checksum mismatch"
+    $version = $TrustedSigningClient.Version
+    Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/$version" -OutFile $pkg
+    $sha256 = (Get-FileHash -Algorithm SHA256 -Path $pkg).Hash
+    if ($sha256 -ne $TrustedSigningClient.Sha256) {
+      throw "Microsoft.Trusted.Signing.Client $version has SHA-256 $sha256, expected $($TrustedSigningClient.Sha256): refusing to load it"
     }
     Expand-Archive -Path $pkg -DestinationPath (Join-Path $tmp 'client') -Force
     $dlib = Get-ChildItem -Path (Join-Path $tmp 'client') -Recurse -Filter Azure.CodeSigning.Dlib.dll |

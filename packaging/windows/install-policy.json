@@ -1,26 +1,27 @@
 {
   "id": "filmcraft",
-  "name": "FilmCraft",
-  "upgradeCode": "31E6FB14-9DBC-41DD-B24B-26B71FB31B62",
+  "upgradeCode": "7C4D2F8A-3B61-4E59-9A0D-5E2F81C6B347",
   "sources": [
     "filmcraft.wxs"
   ],
   "icon": "assets/app-icon/filmcraft.ico",
-  "localization": [],
+  "localization": [
+    "filmcraft.en-us.wxl"
+  ],
   "extensions": [
-    "UI"
+    "UI",
+    "Util"
   ],
   "payloads": [
-    "NOTICE",
     "filmcraft-cli.exe",
     "filmcraft.exe"
   ],
   "registry": [
     [
       "-1",
-      "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\filmcraft.exe",
-      "",
-      "[#FilmcraftExe]"
+      "Software\\Fuse\\Fusemovie",
+      "InstallDir",
+      "[INSTALLFOLDER]"
     ]
   ],
   "mode": "dualScope"

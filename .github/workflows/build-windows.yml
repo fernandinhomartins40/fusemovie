@@ -1,0 +1,90 @@
+name: Build Windows installer
+
+# Builds the Windows MSI and portable zip (with the Codex CLI inside for Window › Codex) and
+# publishes them: Releases › "Última versão (<branch>)" (direct download links), and the run's
+# artifacts (Actions › this run › Artifacts › windows-x64).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, studio-redesign]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 150
+    env:
+      CARGO_PROFILE_RELEASE_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Install sccache
+        uses: Mozilla-Actions/sccache-action@v0.0.9
+
+      - name: Use sccache
+        shell: bash
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> "$GITHUB_ENV"
+          echo "RUSTC_WRAPPER=sccache" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install WiX 5
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Window › Codex runs `codex app-server`; the installer puts codex.exe next to the app.
+      - name: Fetch the Codex CLI
+        run: |
+          npm install -g @openai/codex
+          $root = npm root -g
+          $exe = Get-ChildItem -Path (Join-Path $root '@openai') -Recurse -Filter codex.exe | Select-Object -First 1
+          if (-not $exe) { throw "codex.exe not found under $root" }
+          $dir = Join-Path $env:RUNNER_TEMP 'codex'
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Get-ChildItem -Path $exe.DirectoryName -Filter 'codex*.exe' | Copy-Item -Destination $dir
+          Get-ChildItem $dir | Format-Table Name, Length
+          "FILMCRAFT_CODEX_DIR=$dir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build and package
+        run: pwsh packaging/windows/package.ps1 -Arch x64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: |
+            dist/release/fusemovie-*.msi
+            dist/release/fusemovie-*-portable.zip
+          if-no-files-found: error
+
+      # A rolling pre-release per branch, so the latest installer is always one click away.
+      - name: Publish to Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          tag="latest-${BRANCH//\//-}"
+          gh release delete "$tag" --cleanup-tag --yes -R "$GITHUB_REPOSITORY" 2>/dev/null || true
+          gh release create "$tag" dist/release/fusemovie-*.msi dist/release/fusemovie-*-portable.zip             -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease             --title "Última versão ($BRANCH)"             --notes "Build automático de $GITHUB_SHA. Baixe o .msi para instalar, ou o -portable.zip para usar sem instalar."

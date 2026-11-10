@@ -1,0 +1,45 @@
+name: Checks
+
+# Compiles and tests on GitHub instead of the developer's machine: clippy and the tests of the
+# areas the Fusemovie work touches (Studio shell, Codex panel, brand, control channel, MCP).
+on:
+  workflow_dispatch:
+  push:
+    branches: [studio-redesign, 'worktree-agent-*']
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: checks
+          cache-on-failure: true
+
+      - name: Clippy (ui-egui, automation, app, cli)
+        run: cargo clippy -p filmcraft-ui-egui -p filmcraft-automation -p filmcraft -p filmcraft-cli --all-targets -- -D warnings
+
+      - name: Studio shell tests
+        run: cargo test -p filmcraft-ui-egui --lib -- studio home new_doc codex brand updates_ui
+
+      - name: Automation tests
+        run: cargo test -p filmcraft-automation --lib
+
+      - name: App tests
+        run: cargo test -p filmcraft --bins

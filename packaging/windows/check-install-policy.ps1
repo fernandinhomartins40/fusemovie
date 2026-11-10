@@ -9,6 +9,10 @@ param([Parameter(Mandatory = $true)] [string] $MsiPath)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $policy = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'install-policy.json') | ConvertFrom-Json
+# The product name and company come from brand.env, as they do for the MSI itself.
+. (Join-Path $PSScriptRoot 'brand.ps1')
+$policy | Add-Member -NotePropertyName name -NotePropertyValue $Brand['NAME'] -Force
+$policy | Add-Member -NotePropertyName company -NotePropertyValue $Brand['COMPANY'] -Force
 function Read-Rows($Database, [string] $Sql, [int] $Columns) {
   $view = $Database.OpenView($Sql)
   try {
@@ -55,9 +59,9 @@ try {
     if ($properties['UpgradeCode'].Trim('{}') -ne $policy.upgradeCode) { throw 'Launcher upgrade identity changed.' }
     $dirs = @{}
     foreach ($row in (Read-Rows $database 'SELECT `Directory`, `Directory_Parent`, `DefaultDir` FROM `Directory`' 3)) { $dirs[$row[0]] = @($row[1],$row[2]) }
-    if ($dirs['INSTALLFOLDER'][0] -ne 'CraftSuiteFolder' -or $dirs['CraftSuiteFolder'][1] -ne 'ArtCraft' -or
+    if ($dirs['INSTALLFOLDER'][0] -ne 'CraftSuiteFolder' -or $dirs['CraftSuiteFolder'][1] -ne $policy.company -or
         $dirs['CraftSuiteFolder'][0] -ne 'LocalProgramsFolder' -or $dirs['LocalProgramsFolder'][0] -ne 'LocalAppDataFolder') {
-      throw 'Launcher new-install folder must be under the per-user ArtCraft suite root.'
+      throw 'Launcher new-install folder must be under the per-user company folder.'
     }
     foreach ($explicit in @('', 'F:\Chosen exact launcher')) {
       Set-SessionProperty $session 'PREVIOUSINSTALLFOLDER' 'E:\Existing exact launcher'
@@ -76,7 +80,7 @@ try {
         throw 'Launcher registration or shortcut preference changed unexpectedly.'
       }
     }
-    Write-Output 'PASS ArtCraft Launcher: per-user scope, suite folder, remembered/custom paths and existing registration. No installation performed.'
+    Write-Output 'PASS Launcher: per-user scope, suite folder, remembered/custom paths and existing registration. No installation performed.'
     return
   }
   if ($properties['ALLUSERS'] -ne '2' -or $properties['MSIINSTALLPERUSER'] -ne '1') {
@@ -88,7 +92,7 @@ try {
     $directories[$row[0]] = @($row[1], $row[2])
   }
   if ($directories['INSTALLFOLDER'][0] -ne 'CraftSuiteFolder' -or
-      $directories['CraftSuiteFolder'][1] -ne 'ArtCraft') { throw 'Expected the app under the ArtCraft suite folder.' }
+      $directories['CraftSuiteFolder'][1] -ne $policy.company) { throw 'Expected the app under the company folder.' }
   $programs = $directories['CraftSuiteFolder'][0]
   if ($programs -eq 'ProgramFiles6432Folder') { $programs = $directories[$programs][0] }
   if ($programs -notin 'ProgramFilesFolder', 'ProgramFiles64Folder') {
@@ -162,7 +166,7 @@ try {
   $machineRoot = if ((Get-PackageTemplate $database) -match '^Intel') {
     if (Get-SessionProperty $session 'VersionNT64') { ${env:ProgramFiles(x86)} } else { $env:ProgramFiles }
   } elseif ($env:ProgramW6432) { $env:ProgramW6432 } else { $env:ProgramFiles }
-  $machineFolder = (Join-Path $machineRoot "ArtCraft\$($policy.name)") + '\'
+  $machineFolder = (Join-Path $machineRoot "$($policy.company)\$($policy.name)") + '\'
   foreach ($scope in @('1', '')) {
     Set-SessionProperty $session 'ALLUSERS' $scope
     Set-SessionProperty $session 'INSTALLFOLDER' ''
@@ -172,14 +176,14 @@ try {
       if ($session.EvaluateCondition($row[2]) -eq 1 -and $session.DoAction($row[0]) -ne 1) { throw "$($row[0]) failed." }
     }
     $folder = Get-SessionProperty $session 'INSTALLFOLDER'
-    $wanted = if ($scope -eq '1') { $machineFolder } else { (Join-Path $env:LOCALAPPDATA "Programs\ArtCraft\$($policy.name)") + '\' }
+    $wanted = if ($scope -eq '1') { $machineFolder } else { (Join-Path $env:LOCALAPPDATA "Programs\$($policy.company)\$($policy.name)") + '\' }
     if ($folder -ine $wanted) { throw "Wizard default folder for ALLUSERS='$scope' is '$folder', expected '$wanted'." }
   }
   # Replay the wizard's compiled folder actions in sequence order, as the full UI runs them. A remembered
   # folder must win over the new-install default, and a folder the user typed must survive both.
   $uiFolderActions = @(Read-Rows $database 'SELECT `Action`, `Sequence`, `Condition` FROM `InstallUISequence`' 3 |
     Where-Object { $_[0] -match '^Craft(Restore|Default)' } | Sort-Object { [int]$_[1] })
-  $userDefault = (Join-Path $env:LOCALAPPDATA "Programs\ArtCraft\$($policy.name)") + '\'
+  $userDefault = (Join-Path $env:LOCALAPPDATA "Programs\$($policy.company)\$($policy.name)") + '\'
   foreach ($case in @(
       @('1', 'D:\Remembered user app', 'E:\Remembered machine app', '', 'E:\Remembered machine app'),
       @('', 'D:\Remembered user app', 'E:\Remembered machine app', '', 'D:\Remembered user app'),
@@ -204,9 +208,9 @@ try {
       throw 'Silent updates must restore the folder before directory costing.'
     }
   }
-  foreach ($resolver in @('CraftUFromLegacyExe','CraftMFromLegacyExe')) {
+  foreach ($resolver in @('CraftUFromFOLDER','CraftMFromFOLDER')) {
     if (-not ($execute['AppSearch'] -lt $execute[$resolver] -and $execute[$resolver] -lt $execute['LaunchConditions'])) {
-      throw 'Both legacy folder resolvers must run after AppSearch and before the launch checks.'
+      throw 'Both remembered-folder resolvers must run after AppSearch and before the launch checks.'
     }
   }
   # AppSearch itself never runs in this safe session, so check the compiled searches and then run the
@@ -215,21 +219,20 @@ try {
   foreach ($row in (Read-Rows $database 'SELECT `Property`, `Signature_` FROM `AppSearch`' 2)) { $appSearch[$row[0]] = $row[1] }
   $locators = @{}
   foreach ($row in (Read-Rows $database 'SELECT `Signature_`, `Root`, `Key`, `Name`, `Type` FROM `RegLocator`' 5)) { $locators[$row[0]] = $row }
-  $appPaths = '^Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\[^\\]+\.exe$'
-  # Suffix, how to match the key, key, value name, locator type (2 = raw value, 1 = file; the 64-bit flag is masked off).
+  # Only the product's own key is searched: App Paths\filmcraft.exe is shared with an installed FilmCraft.
+  $ownKey = "Software\$($policy.company)\$($policy.name)"
+  # Suffix, how to match the key, key, value name, locator type (2 = raw value; the 64-bit flag is masked off).
   $searchContract = @(
-    @('DIR',       'exact', "Software\$($policy.name)", 'InstallDir',    '2'),
-    @('FOLDER',    'exact', "Software\$($policy.name)", 'InstallFolder', '2'),
-    @('PATH',      'regex', $appPaths,                  'Path',          '2'),
-    @('EXEFOLDER', 'regex', $appPaths,                  '',              '1'),
-    @('EXE',       'regex', $appPaths,                  '',              '1'))
+    @('DIR',    'exact', $ownKey, 'InstallDir',    '2'),
+    @('FOLDER', 'exact', $ownKey, 'InstallFolder', '2'))
+  foreach ($row in (Read-Rows $database 'SELECT `Key` FROM `RegLocator`' 1)) {
+    if ($row[0] -match 'App Paths') { throw 'Must not search App Paths: it is shared with an installed FilmCraft.' }
+  }
   $resolverCases = @(
-    @{ name = 'every record, DIR wins';        dir = 'D:\Dir\'; folder = 'D:\Folder\'; path = 'D:\Path\'; exeFolder = 'D:\Exe\'; exe = 'D:\Exe\app.exe'; existing = '';            expected = 'D:\Dir\' },
-    @{ name = 'FOLDER wins without DIR';       dir = '';        folder = 'D:\Folder\'; path = 'D:\Path\'; exeFolder = 'D:\Exe\'; exe = 'D:\Exe\app.exe'; existing = '';            expected = 'D:\Folder\' },
-    @{ name = 'PATH wins without DIR, FOLDER'; dir = '';        folder = '';           path = 'D:\Path\'; exeFolder = 'D:\Exe\'; exe = 'D:\Exe\app.exe'; existing = '';            expected = 'D:\Path\' },
-    @{ name = 'legacy exe folder is last';     dir = '';        folder = '';           path = '';         exeFolder = 'D:\Exe\'; exe = 'D:\Exe\app.exe'; existing = '';            expected = 'D:\Exe\' },
-    @{ name = 'legacy folder needs the exe';   dir = '';        folder = '';           path = '';         exeFolder = 'D:\Exe\'; exe = '';               existing = '';            expected = '' },
-    @{ name = 'a preset folder is kept';       dir = 'D:\Dir\'; folder = 'D:\Folder\'; path = 'D:\Path\'; exeFolder = 'D:\Exe\'; exe = 'D:\Exe\app.exe'; existing = 'P:\Preset\'; expected = 'P:\Preset\' })
+    @{ name = 'every record, DIR wins';  dir = 'D:\Dir\'; folder = 'D:\Folder\'; existing = '';            expected = 'D:\Dir\' },
+    @{ name = 'FOLDER wins without DIR'; dir = '';        folder = 'D:\Folder\'; existing = '';            expected = 'D:\Folder\' },
+    @{ name = 'nothing remembered';      dir = '';        folder = '';           existing = '';            expected = '' },
+    @{ name = 'a preset folder is kept'; dir = 'D:\Dir\'; folder = 'D:\Folder\'; existing = 'P:\Preset\'; expected = 'P:\Preset\' })
   foreach ($scopeSpec in @(@('U', '1', 'CRAFT_USER_DIR'), @('M', '2', 'CRAFT_MACHINE_DIR'))) {
     $letter = $scopeSpec[0]; $target = $scopeSpec[2]
     foreach ($item in $searchContract) {
@@ -243,16 +246,13 @@ try {
     $chain = @(Read-Rows $database 'SELECT `Action`, `Sequence`, `Condition` FROM `InstallExecuteSequence`' 3 |
       Where-Object { $_[0] -match "^Craft${letter}From" } | Sort-Object { [int]$_[1] })
     $order = @($chain | ForEach-Object { $_[0] }) -join ','
-    if ($order -ne "Craft${letter}FromDIR,Craft${letter}FromFOLDER,Craft${letter}FromPATH,Craft${letter}FromLegacyExe") {
+    if ($order -ne "Craft${letter}FromDIR,Craft${letter}FromFOLDER") {
       throw "Remembered-folder resolvers for scope $letter run in the wrong order: $order"
     }
     foreach ($case in $resolverCases) {
       Set-SessionProperty $session $target $case.existing
       Set-SessionProperty $session "CRAFT_${letter}_DIR" $case.dir
       Set-SessionProperty $session "CRAFT_${letter}_FOLDER" $case.folder
-      Set-SessionProperty $session "CRAFT_${letter}_PATH" $case.path
-      Set-SessionProperty $session "CRAFT_${letter}_EXEFOLDER" $case.exeFolder
-      Set-SessionProperty $session "CRAFT_${letter}_EXE" $case.exe
       foreach ($row in $chain) {
         if ($session.EvaluateCondition($row[2]) -eq 1 -and $session.DoAction($row[0]) -ne 1) { throw "$($row[0]) failed." }
       }
@@ -360,7 +360,7 @@ try {
     $found = @($registry | Where-Object { $_[0] -eq $entry[0] -and $_[1] -eq $entry[1] -and $_[2] -eq $entry[2] -and $_[3] -eq $entry[3] })
     if ($found.Count -ne 1) { throw "Lost or changed registration: $($entry[1]) / $($entry[2])" }
   }
-  $installDir = @($registry | Where-Object { $_[0] -eq '-1' -and $_[1] -eq "Software\$($policy.name)" -and $_[2] -eq 'InstallDir' -and $_[3] -eq '[INSTALLFOLDER]' })
+  $installDir = @($registry | Where-Object { $_[0] -eq '-1' -and $_[1] -eq "Software\$($policy.company)\$($policy.name)" -and $_[2] -eq 'InstallDir' -and $_[3] -eq '[INSTALLFOLDER]' })
   if ($installDir.Count -ne 1) { throw 'A context-sensitive installation-folder record is required.' }
   Write-Output "PASS $($policy.name): $cases scope cases, folder preservation, action sequencing and registry contract. No installation performed."
 } finally {

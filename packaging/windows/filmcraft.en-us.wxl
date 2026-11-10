@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overrides for the setup wizard's WixUI strings, so its pages name the version being installed
+  ([FilmcraftVersion] is the full version, pre-release tag included, set in filmcraft.wxs).
+-->
+<WixLocalization Culture="en-US" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="WelcomeDlgTitle" Value="{\WixUI_Font_Bigger}Welcome to the [ProductName] [FilmcraftVersion] Setup Wizard" />
+  <String Id="WelcomeDlgDescription" Value="The Setup Wizard will install [ProductName] version [FilmcraftVersion] on your computer. Click Next to continue or Cancel to exit the Setup Wizard." />
+  <String Id="VerifyReadyDlgInstallTitle" Value="{\WixUI_Font_Title}Ready to install [ProductName] [FilmcraftVersion]" />
+  <String Id="ExitDialogTitle" Value="{\WixUI_Font_Bigger}Completed the [ProductName] [FilmcraftVersion] Setup Wizard" />
+  <String Id="FilmcraftInstallDirNote" Value="[ProductName] installs for your user account only, into your own Programs folder, without asking an administrator for permission." />
+  <String Id="FilmcraftAllUsers" Value="Install for all users of this computer (asks an administrator)" />
+</WixLocalization>
