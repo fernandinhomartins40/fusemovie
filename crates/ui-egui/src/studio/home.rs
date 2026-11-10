@@ -394,15 +394,24 @@ pub(super) mod tests {
 
     use crate::FilmcraftApp;
 
+    fn ready() -> egui::Id {
+        egui::Id::unique("studio-test-ready")
+    }
+
     pub(in crate::studio) fn harness(w: f32, h: f32, app: FilmcraftApp) -> Harness<'static, FilmcraftApp> {
         let mut h = Harness::builder().with_size(egui::vec2(w, h)).build_ui_state(
             |ui, app: &mut FilmcraftApp| {
+                // the builder runs a frame before the fonts are installed: draw from the next one
+                if !ui.ctx().data(|d| d.get_temp::<bool>(ready()).unwrap_or(false)) {
+                    return;
+                }
                 app.auto.begin_frame();
                 egui::CentralPanel::default().frame(egui::Frame::NONE).show(ui, |ui| super::show(app, ui));
             },
             app,
         );
         crate::theme::install(&h.ctx, &h.state().tokens);
+        h.ctx.data_mut(|d| d.insert_temp(ready(), true));
         h.run_steps(3);
         h
     }
