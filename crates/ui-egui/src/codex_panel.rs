@@ -1019,8 +1019,9 @@ mod tests {
         h.get_by_label_contains("BigModel").click();
         h.run_steps(2);
         assert!(h.query_by_label("SmallModel description").is_some(), "the menu says what each model is for");
-        h.get_by_label("SmallModel").click();
-        h.run_steps(2);
+        // Through accessibility: a pointer click needs the popup's place from an earlier frame.
+        h.get_by_label("SmallModel").click_accesskit();
+        h.run_steps(3);
         assert_eq!(requests.try_recv().ok(), Some(CodexRequest::SetModel("small".into())));
         assert_eq!(h.state().codex.model.as_deref(), Some("small"));
     }
