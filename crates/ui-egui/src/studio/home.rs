@@ -32,6 +32,7 @@ enum Act {
 
 /// Home, or the New project page while it is open.
 pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
+    let t = app.tokens;
     if super::new_doc::is_open(ui.ctx()) {
         super::new_doc::show(app, ui);
         return;
@@ -115,6 +116,7 @@ pub(crate) fn drop_files(app: &mut FilmcraftApp, ctx: &egui::Context, paths: &[S
 
 /// A row on the rail: an icon and a label, the amber pill when `selected`, faint when disabled.
 fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, label): (&str, Icon, &str), selected: bool, enabled: bool) -> Response {
+    let t = app.tokens;
     let resp = ui.interact(rect, egui::Id::unique(("studio-home-rail", id)), if enabled { Sense::click() } else { Sense::hover() });
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, label));
     app.auto.add(&format!("home.rail.{id}"), rect, label);
@@ -139,6 +141,7 @@ fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, l
 /// Product name, then Home (selected), New project, Open project, Create with AI (coming soon);
 /// Settings at the foot.
 fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut Option<Act>) {
+    let t = app.tokens;
     ui.painter().text(pos2(rail.left() + 22.0, rail.top() + 30.0), Align2::LEFT_CENTER, BRAND, Tokens::semibold(16.0), t.text);
     let x = rail.left() + 10.0..=rail.right() - 10.0;
     let row = |y: f32| Rect::from_x_y_ranges(x.clone(), y..=y + 36.0);
@@ -163,6 +166,7 @@ fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut 
 
 /// A rounded icon + label button `h` tall at `min`: amber when `primary`, a card otherwise.
 pub(super) fn button(app: &mut FilmcraftApp, ui: &mut egui::Ui, (min, h): (egui::Pos2, f32), id: &str, label: &str, icon: Option<Icon>, primary: bool) -> Response {
+    let t = app.tokens;
     let font = if primary { Tokens::semibold(14.0) } else { Tokens::ui(13.5) };
     let ink = if primary { t.primary_text } else { t.text };
     let galley = ui.painter().layout_no_wrap(label.to_owned(), font, ink);
@@ -195,6 +199,7 @@ pub(super) fn paragraph(ui: &egui::Ui, min: egui::Pos2, w: f32, text: &str, font
 
 /// The hero, its buttons, the drop zone and the recent projects.
 fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, act: &mut Option<Act>) {
+    let t = app.tokens;
     let mut y = left.top();
     y += paragraph(ui, pos2(left.left(), y), left.width(), tl!("What shall we create today?"), Tokens::semibold(if c { 22.0 } else { 28.0 }), t.text);
     y += 6.0;
@@ -262,6 +267,7 @@ fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, a
 
 /// The dashed drop zone, lit while files hover the window; a click opens a project.
 fn drop_zone(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool) -> Response {
+    let t = app.tokens;
     let resp = ui.interact(r, egui::Id::unique("studio-home-drop"), Sense::click()).on_hover_cursor(egui::CursorIcon::PointingHand);
     let label = tl!("Drop video, audio or images to start a project");
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, label));
@@ -322,6 +328,7 @@ pub(super) fn frame_icon(c: egui::Pos2, size: egui::Vec2, w: u32, h: u32) -> Rec
 
 /// "Start with a format": a card with one row per format; a click creates that project.
 fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, right: Rect, c: bool, act: &mut Option<Act>) {
+    let t = app.tokens;
     let row_h = if c { 46.0 } else { 54.0 };
     let n = super::new_doc::FORMATS.len() as f32;
     let card = Rect::from_min_size(right.min, vec2(right.width(), (44.0 + n * (row_h + 4.0) + 8.0).min(right.height())));

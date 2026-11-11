@@ -126,6 +126,7 @@ pub(crate) fn create(app: &mut FilmcraftApp, ctx: &egui::Context, d: &Draft) -> 
 
 /// The New project page.
 pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
+    let t = app.tokens;
     let ctx = ui.ctx().clone();
     let mut d = ctx.data(|m| m.get_temp::<Draft>(id())).unwrap_or_else(|| Draft::for_format(0, 0));
     let area = ui.available_rect_before_wrap();
@@ -148,7 +149,7 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
 
     render_formats(app, ui, formats, &mut d);
     render_presets(app, ui, presets, c, &mut d);
-    render_preview(ui, center, c, &d);
+    render_preview(t, ui, center, c, &d);
     render_settings(app, ui, settings, c, &mut d);
 
     // Foot: Back, the summary, Create.
@@ -178,13 +179,14 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     ctx.data_mut(|m| m.insert_temp(id(), d));
 }
 
-fn section_title(ui: &egui::Ui, r: Rect, text: &str) {
+fn section_title(t: Tokens, ui: &egui::Ui, r: Rect, text: &str) {
     ui.painter().text(pos2(r.left() + 20.0, r.top() + 30.0), Align2::LEFT_CENTER, text, Tokens::semibold(14.0), t.text);
 }
 
 /// The formats: a row each, the chosen one in amber; a click picks its first preset.
 fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, d: &mut Draft) {
-    section_title(ui, r, tl!("Choose a format"));
+    let t = app.tokens;
+    section_title(t, ui, r, tl!("Choose a format"));
     for (i, f) in FORMATS.iter().enumerate() {
         let row = Rect::from_min_size(pos2(r.left() + 10.0, r.top() + 56.0 + i as f32 * 40.0), vec2(r.width() - 20.0, 36.0));
         let name = crate::i18n::t(f.name);
@@ -209,8 +211,9 @@ fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, d: &mut Dr
 
 /// The chosen format's presets as cards: size over rate and audio; a click fills the settings.
 fn render_presets(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, d: &mut Draft) {
+    let t = app.tokens;
     let Some(f) = FORMATS.get(d.format) else { return };
-    section_title(ui, r, &tlf!("Presets ({n})", n = f.presets.len()));
+    section_title(t, ui, r, &tlf!("Presets ({n})", n = f.presets.len()));
     let chosen = d.preset();
     let card_h = if c { 64.0 } else { 76.0 };
     for (i, &(w, h, fps)) in f.presets.iter().enumerate() {
@@ -238,7 +241,7 @@ fn render_presets(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, d
 }
 
 /// The title, then the frame at its aspect between a width ruler and a height ruler.
-fn render_preview(ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
+fn render_preview(t: Tokens, ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
     let pad = if c { 24.0 } else { 36.0 };
     let inner = r.shrink2(vec2(pad, pad * 0.8));
     let mut y = inner.top();
@@ -303,7 +306,7 @@ fn aspect(w: u32, h: u32) -> String {
 }
 
 /// Studio fields: dark fill, 1 px border, 30 points tall, 13.5 px text.
-fn field_style(ui: &mut egui::Ui) {
+fn field_style(t: Tokens, ui: &mut egui::Ui) {
     ui.style_mut().override_font_id = Some(Tokens::ui(13.5));
     let s = ui.spacing_mut();
     s.interact_size.y = 30.0;
@@ -323,23 +326,24 @@ fn field_style(ui: &mut egui::Ui) {
     v.widgets.noninteractive.bg_stroke = Stroke::new(1.0, t.separator);
 }
 
-fn field_label(ui: &mut egui::Ui, text: &str) {
+fn field_label(t: Tokens, ui: &mut egui::Ui, text: &str) {
     ui.label(egui::RichText::new(text).font(Tokens::ui(12.5)).color(t.text_dim));
 }
 
 /// Name, location, size, rate, pixel aspect and sample rate.
 fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, d: &mut Draft) {
+    let t = app.tokens;
     let inner = Rect::from_min_max(pos2(r.left() + 20.0, r.top() + 14.0), pos2(r.right() - 20.0, r.bottom() - 10.0));
     let before = d.clone();
     ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
-        field_style(ui);
+        field_style(t, ui);
         let w = inner.width();
         ui.label(egui::RichText::new(tl!("Project settings")).font(Tokens::semibold(16.0)).color(t.text));
         ui.add_space(if c { 0.0 } else { 6.0 });
-        field_label(ui, tl!("Name"));
+        field_label(t, ui, tl!("Name"));
         let r = ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(w).margin(vec2(10.0, 7.0)));
         app.auto.add_response("newDoc.name", &r, tl!("Name"));
-        field_label(ui, tl!("Location"));
+        field_label(t, ui, tl!("Location"));
         let r = ui.add(egui::TextEdit::singleline(&mut d.location).desired_width(w).margin(vec2(10.0, 7.0)).hint_text(tl!("Not saved yet")));
         // shortcut: the folder is typed or pasted; a folder picker can come with the integrated shell
         app.auto.add_response("newDoc.location", &r, tl!("Location"));
@@ -350,26 +354,26 @@ fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, 
             for (key, label, v) in [("width", tl!("Width"), &mut d.width), ("height", tl!("Height"), &mut d.height)] {
                 ui.vertical(|ui| {
                     ui.set_width(half);
-                    field_label(ui, label);
+                    field_label(t, ui, label);
                     let r = ui.add_sized(vec2(half, 30.0), egui::DragValue::new(v).range(16..=16_384).suffix(" px"));
                     app.auto.add_response(&format!("newDoc.{key}"), &r, label);
                 });
             }
         });
-        field_label(ui, tl!("Frame Rate"));
+        field_label(t, ui, tl!("Frame Rate"));
         let r = craft_ui::ComboBox::from_id_salt("studio-newdoc-fps").width(w).selected_text(format!("{} fps", fps_label(d.fps))).show_ui(ui, |ui| {
             for f in RATES {
                 ui.selectable_value(&mut d.fps, f, format!("{} fps", fps_label(f)));
             }
         });
         app.auto.add_response("newDoc.fps", &r.response, tl!("Frame Rate"));
-        field_label(ui, tl!("Pixel Aspect Ratio"));
+        field_label(t, ui, tl!("Pixel Aspect Ratio"));
         ui.add_enabled_ui(false, |ui| {
             craft_ui::ComboBox::from_id_salt("studio-newdoc-par").width(w).selected_text(tl!("Square Pixels (1.0)")).show_ui(ui, |_| {});
         })
         .response
         .on_disabled_hover_text(tl!("Sequences use square pixels"));
-        field_label(ui, tl!("Audio Sample Rate"));
+        field_label(t, ui, tl!("Audio Sample Rate"));
         let r = craft_ui::ComboBox::from_id_salt("studio-newdoc-rate").width(w).selected_text(format!("{} Hz", d.sample_rate)).show_ui(ui, |ui| {
             for s in SAMPLE_RATES {
                 ui.selectable_value(&mut d.sample_rate, s, format!("{s} Hz"));
