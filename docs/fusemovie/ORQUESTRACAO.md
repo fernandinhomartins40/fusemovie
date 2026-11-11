@@ -1,66 +1,13 @@
-# Fusemovie: plano de orquestração para terminar a implementação
+# Fusemovie: instruções para o orquestrador
 
-Para a sessão que vai orquestrar os agentes (Opus 5.5) e para o dono acompanhar. Escrito em
-2026-11-11 sobre o commit `39018254` do branch `studio-redesign`. Substitui a parte "Próximas fases" do
-[`PLANO.md`](PLANO.md). O roteiro geral da família continua em `C:\FuseDev\fuseopenphoto\docs\fuse-suite\`.
+Para a sessão Opus 5.5 que vai lançar os agentes. O que falta e por quê está em [`PLANO.md`](PLANO.md);
+leia-o primeiro (5 minutos). Este arquivo diz **como** executar: regras, passos de cada onda, os prompts
+prontos dos agentes e os comandos.
 
-Leia este arquivo inteiro uma vez. Depois siga as ondas na ordem; cada onda traz os prompts prontos.
+Você é o orquestrador: cria as worktrees, lança os agentes, espera o CI, integra e publica. Não
+reescreva os prompts; cole-os como estão, trocando só o que estiver entre `< >`.
 
-## 1. Onde estamos
-
-Feito, integrado e com instalador publicado do commit `39018254` (checks e build verdes):
-
-| Fase | Estado | Onde está |
-|---|---|---|
-| 1 Fork | feito | `origin` = `fernandinhomartins40/fusemovie`, `upstream` só leitura, branch padrão `studio-redesign` |
-| 2 Build | feito | `.github/workflows/build-windows.yml` (MSI + zip, pré-release `latest-studio-redesign`), `checks.yml` |
-| 3 Marca | feito | `brand.env`, `crates/ui-egui/src/brand.rs`, catálogos com `{app}`, ícone novo, sem atualizações |
-| 4 Codex | feito, **não testado de verdade** | `apps/filmcraft/src/codex.rs`, `crates/ui-egui/src/codex_panel.rs`, `codex_service` em `apps/filmcraft/src/main.rs` |
-| 5 Studio | feito, **não visto no app real** | `crates/ui-egui/src/studio/` (`mod`, `top_bar`, `mode_bar`, `tools`, `right`, `bottom`, `home`, `new_doc`, `style`, `tests`) |
-| 6 Compacto e acabamento | só o básico | tamanhos compactos existem e têm teste; nada foi ajustado com print do dono |
-| 7 Montagem automática | **não começou** | "Criar com IA" na Início está desativado ("em breve") |
-
-Telas geradas pelos testes: `docs/redesign/fusemovie/*.png`.
-
-## 2. O que a análise encontrou
-
-Em ordem de importância. Cada item diz em que onda é resolvido.
-
-1. **O instalador não transcreve fala.** A transcrição (Whisper) é a feature `whisper` do Cargo, desligada
-   por padrão, e o `packaging/windows/package.ps1` compila sem ela. Sem isso, `transcript.generate` fica
-   desativado e a função de destaque não faz legendas. *Onda 1, tarefa T1.*
-2. **O Codex não consegue ver um clipe antes de colocá-lo na linha do tempo.** O `render_preview` só
-   renderiza a sequência ativa. A montagem automática precisa olhar quadros de cada clipe da pasta.
-   *Onda 1, T1.*
-3. **A suíte inteira de testes nunca rodou no fork.** O `checks.yml` roda só os testes com `studio`,
-   `home`, `new_doc`, `codex`, `brand` no nome. O agente do Studio trocou `FilmcraftApp::new` por
-   `new_classic` em 105 arquivos de `crates/ui-egui/tests/it/` e esses testes não foram executados.
-   Os portões `cargo xtask assets`, `layers` e `wasm` também não. *Onda 0 dispara; Onda 1, T3 corrige.*
-4. **O painel do Codex não tem os ganchos que o "Criar com IA" usa.** No Photo, o `create_ai.rs` chama
-   `ensure_started`, `new_chat`, `send_as`, `switch_model`, `has_model`, `last_error`,
-   `last_turn_error`, `limit_reached`, `is_signed_in`, `strip_tag`. No Fusemovie só existem `is_busy`,
-   `is_running`, `take_drop`. *Onda 1, T2.*
-5. **O `AGENTS.md` contradiz o fork.** Ele manda o CI chamar `storytold/craft-common-actions`, abrir PR
-   para `main` e rodar `cargo xtask ci` antes de cada commit. Todo agente carrega esse arquivo e gasta
-   tokens resolvendo a contradição. *Onda 0.*
-6. **Todo merge deu conflito no `pt-br.tsv`**, porque cada agente acrescenta linhas no fim. *Onda 0.*
-7. **Sobras pequenas:** 2 marcas `// integrator: switch to theme::Tokens` em `studio/home.rs`; 11
-   textos com "FilmCraft" fixo em `crates/ui-egui/src` e `apps/filmcraft/src`; 1 linha no `pt-br.tsv`;
-   README ainda é o do upstream. *Onda 1, T4.*
-8. **Nada foi aberto de verdade.** Login, Codex real, GPU e reprodução só o dono testa. *Portão do dono.*
-
-Boas notícias que encurtam o trabalho:
-
-- A linha do tempo já tem todos os comandos que a receita precisa: `file.import`, `file.newSequence`,
-  `timeline.place`, `timeline.razor`, `timeline.trim`, `timeline.move`, `sequence.applyVideoTransition`,
-  `graphics.newText`, `lumetri.setSection`, `lumetri.applyMatch`, `clip.audioGain`,
-  `transcript.generate`, `transcript.inspect`, `transcript.createCaptions`, `transcript.models`,
-  `transcript.downloadModel` (ver `docs/transcripts.md`).
-- O `drain_control` (`crates/ui-egui/src/app/control.rs`) já tem a fila `deferred`: dá para segurar
-  0,12 s entre edições sem mudar o protocolo.
-- O `ui.renderPreview` já renderiza o quadro pelo motor e aceita `region`.
-
-## 3. Por que a rodada anterior saiu cara, e as regras para esta
+## 1. Regras desta rodada
 
 Medido na rodada de 2026-11-10: cada agente terminou com 250 a 330 mil tokens de contexto, os 4 bateram
 o limite de 5 horas duas vezes, e cada um acordou de 5 a 10 vezes só para ver se o CI tinha terminado.
@@ -69,7 +16,7 @@ Cada despertar relê o contexto inteiro.
 Regras desta rodada:
 
 1. **Agente não espera CI.** Ele faz, roda `cargo clippy` local, faz commit, faz push do branch dele e
-   **termina** com um relatório curto. Quem espera o CI é o orquestrador, com o laço da seção 9, que
+   **termina** com um relatório curto. Quem espera o CI é o orquestrador, com o laço da seção 7, que
    não gasta tokens. Se falhar, o orquestrador manda ao mesmo agente (SendMessage) só o trecho do log.
 2. **No máximo 3 agentes ao mesmo tempo.**
 3. **Prompt curto.** As regras ficam no `AGENTS.md` (Onda 0); o prompt traz só worktree, tarefa,
@@ -81,18 +28,18 @@ Regras desta rodada:
    (`cancel-in-progress`). Junte os merges e envie uma vez.
 7. **Não regenerar os PNGs de `docs/redesign/fusemovie/`** se a tela não mudou. Cada um exige um
    arquivo `.attribution` e uma linha no `ATTRIBUTION.md`.
-8. **Limite de uso:** se um agente cair, salve o trabalho dele com o comando da seção 9 e retome o
+8. **Limite de uso:** se um agente cair, salve o trabalho dele com o comando da seção 7 e retome o
    mesmo agente com SendMessage. Não lance outro no lugar.
 9. **Disco:** 33 GB livres. Cada `CARGO_TARGET_DIR` ocupa uns 7 GB. Apague o de cada agente depois do
    merge.
 10. **`isolation: "worktree"` da ferramenta Agent não funciona nesta máquina** (confunde `c:` com
-    `C:`). Crie a worktree à mão (seção 9) e passe o caminho no prompt.
+    `C:`). Crie a worktree à mão (seção 7) e passe o caminho no prompt.
 
 Regras do dono, que continuam valendo: nunca abrir ou automatizar navegador nem disparar login; `gh`
 sempre com `-R fernandinhomartins40/fusemovie`; consultar o GitHub no máximo a cada 5 minutos; só dizer
 "pronto" com a pré-release `latest-studio-redesign` publicada do commit final.
 
-## 4. Onda 0: o orquestrador sozinho (sem agentes)
+## 2. Onda 0: você sozinho (sem agentes)
 
 Tudo aqui é pequeno e mecânico. Faça direto no `studio-redesign`, em um commit, e um push no fim.
 
@@ -185,9 +132,15 @@ Tudo aqui é pequeno e mecânico. Faça direto no `studio-redesign`, em um commi
 6. Commit, push, e dispare: `gh workflow run full-tests.yml -R fernandinhomartins40/fusemovie --ref studio-redesign`.
    Não espere: siga para a Onda 1. O resultado alimenta a tarefa T3.
 
-## 5. Onda 1: três agentes em paralelo (T1, T2, T4), depois T3
+7. Enquanto a Onda 1 roda, descubra se os testes rodam nesta máquina:
+   `CARGO_TARGET_DIR=C:/FuseDev/target-codex cargo test -p filmcraft-ui-egui --lib -- studio_is_the_default`
+   (em segundo plano; compila por uns 10 minutos). Se rodar, avise os agentes por SendMessage que podem
+   rodar localmente os testes da própria tarefa, filtrados por nome. Se der "os error 4551" (Controle
+   Inteligente de Aplicativos), não contorne: os testes ficam só no CI.
 
-Crie as worktrees (seção 9) e lance T1, T2 e T4 juntos. T3 só é lançado quando o `full-tests` terminar,
+## 3. Onda 1: três agentes em paralelo (T1, T2, T4), depois T3
+
+Crie as worktrees (seção 7) e lance T1, T2 e T4 juntos. T3 só é lançado quando o `full-tests` terminar,
 e só se houver falha nossa.
 
 Os arquivos de cada tarefa não se cruzam, fora os catálogos (resolvidos pelo `merge=union`):
@@ -196,7 +149,7 @@ Os arquivos de cada tarefa não se cruzam, fora os catálogos (resolvidos pelo `
 |---|---|---|
 | T1 Ferramentas | Sonnet | `packaging/windows/package.ps1`, `crates/automation/src/server.rs` e testes, `crates/ui-egui/src/control.rs`, `docs/control-protocol.md`, `docs/agents.md` |
 | T2 Criar com IA | Opus | novo `crates/ui-egui/src/create_ai.rs`, `codex_panel.rs`, `app/control.rs`, `app/frame.rs`, `menus.rs` (um braço), `lib.rs` (um campo), `studio/home.rs` (só o item "Criar com IA") |
-| T4 Acabamento | Sonnet | `studio/home.rs` (só a paleta), os 11 textos, `README.md`, `docs/fusemovie/PLANO.md` |
+| T4 Acabamento | Sonnet | `studio/home.rs` (só a paleta), os 11 textos, `README.md` |
 | T3 Suíte inteira | Sonnet | testes em `crates/ui-egui/tests/`, sidecars de assets; código só se o teste provar um defeito |
 
 T2 e T4 tocam `studio/home.rs` em trechos diferentes (T2: a função do trilho, linha ~187; T4: as
@@ -252,7 +205,7 @@ Tarefa: portar a função "Criar com IA" do Fuse Open Photo para vídeo. A refer
 C:\FuseDev\fuseopenphoto\crates\ui-egui\src\create_ai.rs (913 linhas; leia inteiro, é o molde) e os
 pontos onde o Photo o chama: app/control.rs (hold, observe), app/frame.rs (filter_keys, take_drop,
 show), menus/invoke.rs (COMMAND), codex_panel.rs (Act::CreateAi, strip_tag, chip).
-Leia também docs/fusemovie/ORQUESTRACAO.md, seção 6 (a receita e as decisões já tomadas).
+Leia também docs/fusemovie/ORQUESTRACAO.md, seção 4 (a receita e as decisões já tomadas).
 
 Parte A, ganchos no painel (crates/ui-egui/src/codex_panel.rs). Faltam os que o create_ai usa;
 copie do codex_panel.rs do Photo com as mesmas assinaturas: ensure_started, new_chat, send_as
@@ -283,7 +236,7 @@ Run, Cursor; open, take_drop, filter_keys, hold, observe, tick, show), com estas
   Ajustando, Transição, Escrevendo o título, Legendas, Ajustando a cor, Ajustando o áudio.
 - Limite de uso: pausa; outra conta retoma com a receita de continuação.
 - Fim: Salvar (.fcproj, `file.saveAs`); parado no meio: Manter ou Descartar.
-- A receita está em docs/fusemovie/ORQUESTRACAO.md, seção 6. Use aquele texto; confirme cada id de
+- A receita está em docs/fusemovie/ORQUESTRACAO.md, seção 4. Use aquele texto; confirme cada id de
   comando com um Grep em crates/engine/src antes de fixá-lo.
 
 Testes (nomes contendo `codex` ou `studio`, o CI filtra por nome), kittest fora da tela e unitários:
@@ -316,7 +269,6 @@ CARGO_TARGET_DIR=C:\FuseDev\target-t4. As regras estão no topo do AGENTS.md (se
 3. README.md: substitua por um README curto do Fusemovie (o que é, que é um fork de
    storytold/filmcraft sob MIT OR Apache-2.0, onde baixar o instalador, como compilar, link para
    docs/fusemovie/). Guarde o original como docs/upstream-README.md.
-4. docs/fusemovie/PLANO.md: marque as fases 2 a 5 como feitas e aponte para ORQUESTRACAO.md.
 
 Pronto quando: clippy de filmcraft-ui-egui com -D warnings passa, tudo em commit, branch enviado
 (`git push -u origin worktree-agent-t4`). Não espere o CI. Relatório de 5 linhas.
@@ -355,7 +307,7 @@ enviado. Não espere o CI. Termine com: falha → causa → correção, uma linh
 Depois do merge de T3, dispare o `full-tests` de novo. Se sobrarem até 5 falhas, mande a lista ao
 mesmo agente. Mais que isso, pare e mostre ao dono.
 
-## 6. A receita da montagem automática (para T2)
+## 4. A receita da montagem automática (para T2)
 
 Decisões já tomadas, para o agente não reabrir:
 
@@ -421,7 +373,7 @@ work out which stages are done, and continue from there without redoing them.
 
 Sem transcrição no build: tire a etapa 2 e as legendas da etapa 4, e renumere as marcas para 5 etapas.
 
-## 7. Integração de cada onda
+## 5. Integração de cada onda
 
 1. Para cada branch, na ordem T4, T1, T2, T3: `git merge --no-edit worktree-agent-tN`. Com o
    `merge=union`, os catálogos não devem mais conflitar; se sobrar conflito em código, resolva lendo
@@ -429,37 +381,16 @@ Sem transcrição no build: tire a etapa 2 e as legendas da etapa 4, e renumere 
 2. `git diff --stat ORIG_HEAD HEAD` para ver se alguém saiu dos arquivos da tarefa.
 3. Clippy local do conjunto (2 a 3 minutos com cache):
    `CARGO_TARGET_DIR=C:/FuseDev/target-codex cargo clippy -p filmcraft-ui-egui -p filmcraft-automation -p filmcraft -p filmcraft-cli --all-targets -- -D warnings`
-4. Um push. Espere com o laço da seção 9. Confirme a pré-release com
+4. Um push. Espere com o laço da seção 7. Confirme a pré-release com
    `gh release view latest-studio-redesign -R fernandinhomartins40/fusemovie --json targetCommitish,publishedAt`.
 5. Remova as worktrees e os `target-tN`.
 
-## 8. Portão do dono, e a Onda 2
+## 6. Depois da integração
 
-Só depois que o instalador com T1 a T4 estiver publicado. Não lance agentes de acabamento antes: sem o
-teste real eles ajustam por suposição.
+Pare e entregue ao dono o instalador e a lista de teste da seção 4 do `PLANO.md`. Não lance agentes de
+acabamento antes de ele responder. A Onda 2 está descrita lá.
 
-O dono instala e confere, nesta ordem, mandando print do que falhar:
-
-1. O app abre na Início; Novo projeto cria a sequência; arrastar um vídeo funciona; o vídeo toca.
-2. Os 5 modos, as ferramentas e a linha do tempo no notebook (modo compacto).
-3. Varinha › entrar com ChatGPT › pedir "importe estes clipes e monte em sequência". O status deve
-   chegar a "MCP conectado".
-4. Criar com IA com 3 a 5 clipes curtos e um briefing de duas linhas.
-
-Onda 2, conforme o que voltar:
-
-- **Um agente Sonnet de acabamento**, com todos os prints do dono no mesmo prompt (fase 6: compacto,
-  textos cortados, rolagem). Um agente só, porque os ajustes caem nos mesmos arquivos de `studio/`.
-- **Receita:** o que o Codex real errar (comando com parâmetro errado, etapa pulada) corrige-se no
-  texto da receita e na descrição das ferramentas MCP. É edição de texto: o orquestrador faz sozinho.
-- **Erros do Codex real** (login, "MCP tool call requires approval", porta, token): o orquestrador lê
-  o log que o dono mandar e corrige direto em `apps/filmcraft/src/codex.rs`; só lança agente se
-  passar de um arquivo.
-
-Pronto, para dizer ao dono: instalador da pré-release no commit final, checks verdes, `full-tests` sem
-falha nossa, e a lista do que ele testou e do que continua sem teste real.
-
-## 9. Comandos do orquestrador
+## 7. Comandos
 
 Criar as worktrees da Onda 1 (o branch precisa começar com `worktree-agent-` para o `checks.yml` rodar):
 
@@ -494,9 +425,3 @@ for d in t*; do [ -n "$(git -C $d status --porcelain)" ] && git -C $d add -A && 
 ```
 
 Depois: SendMessage ao agente com "retome de onde parou; seu trabalho foi salvo em um commit WIP".
-
-## 10. Fora deste plano
-
-Ficam para depois, por decisão de escopo: assinatura de código do instalador (custa dinheiro; decisão
-do dono), abrir `.prproj`, vozes neurais (`neural-voices`), datas na lista de conversas do Codex, coluna
-do Codex redimensionável no layout clássico, builds para macOS e Linux.
