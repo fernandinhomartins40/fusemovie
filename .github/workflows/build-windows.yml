@@ -71,7 +71,9 @@ jobs:
       - name: Build and package
         run: pwsh packaging/windows/package.ps1 -Arch x64
 
+      # The release below reads dist/release itself: an artifact-service outage must not block it.
       - uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: windows-x64
           path: |
