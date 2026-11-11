@@ -19,7 +19,7 @@
 //! - `ui.timeline.locate {clip, edge?}`: screen point of a clip body/edge (for drags)
 //! - `ui.playback {action: play|stop|toggle, speed?}`
 //! - `ui.screenshot {path?, panel?}`: PNG of the window (or one panel)
-//! - `ui.renderPreview {path, seconds?, maxSide?, region?}`: PNG of the sequence frame from the engine
+//! - `ui.renderPreview {path, seconds?, maxSide?, region?, item?}` (`item`: a media item's frame, nothing placed): PNG of the sequence frame from the engine
 //! - `ui.resize {width, height}` / `ui.focus` / `app.quit`
 
 use std::sync::mpsc::Sender;
@@ -776,23 +776,36 @@ fn preview_area(frame: (u32, u32), region: Option<&Value>, max: u32) -> Result<(
     Ok((scale as f32, [x / fw, y / fh, w / fw, h / fh]))
 }
 
-/// `ui.renderPreview {path, seconds?, maxSide?, region?}`: the active sequence's frame (at
+/// `ui.renderPreview {path, seconds?, maxSide?, region?, item?}`: with `item` (a project media item) its
+/// frame at media time `seconds` (default 0, `maxSide` default 512), as the Source monitor decodes it;
+/// otherwise the active sequence's frame (at
 /// `seconds`, default the playhead) rendered by the engine (not a window screenshot, so no UI on
 /// top and the playhead stays put), cropped to `region`, written as a PNG to `path`.
 fn render_preview(app: &FilmcraftApp, p: &Value) -> Result<Value, String> {
     let path = p.get("path").and_then(Value::as_str).ok_or("need `path`")?;
+    let item = match p.get("item") {
+        None | Some(Value::Null) => None,
+        Some(v) => Some(filmcraft_project::ItemId(v.as_u64().ok_or("`item` must be a media item id")?)),
+    };
     let max = match p.get("maxSide") {
-        None | Some(Value::Null) => 960,
+        None | Some(Value::Null) => if item.is_some() { 512 } else { 960 },
         Some(v) => v.as_u64().and_then(|m| u32::try_from(m).ok()).filter(|m| *m <= 8192).ok_or("`maxSide` must be an integer up to 8192")?,
     };
-    let seq = app.session.active_sequence().ok_or("no sequence is open")?;
-    let (scale, [fx, fy, fw, fh]) = preview_area((seq.settings.width, seq.settings.height), p.get("region"), max)?;
-    let t = match p.get("seconds").and_then(Value::as_f64) {
-        Some(s) if s.is_finite() => filmcraft_time::Tick::from_seconds_f64(s),
-        Some(_) => return Err("`seconds` must be finite".into()),
-        None => app.session.playhead(),
+    let frame = match item {
+        Some(id) => app.session.media_frame_size(id)?,
+        None => app.session.active_sequence().map(|q| (q.settings.width, q.settings.height)).ok_or("no sequence is open")?,
     };
-    let img = app.session.try_render_program_at(scale, t).map_err(|e| e.to_string())?;
+    let (scale, [fx, fy, fw, fh]) = preview_area(frame, p.get("region"), max)?;
+    let secs = match p.get("seconds") {
+        None | Some(Value::Null) => None,
+        Some(v) => Some(v.as_f64().ok_or("`seconds` must be a number")?),
+    };
+    let img = match (item, secs) {
+        (Some(id), s) => app.session.render_media_frame(id, s.unwrap_or(0.0), scale)?,
+        (None, Some(s)) if s.is_finite() => app.session.try_render_program_at(scale, filmcraft_time::Tick::from_seconds_f64(s)).map_err(|e| e.to_string())?,
+        (None, Some(_)) => return Err("`seconds` must be finite".into()),
+        (None, None) => app.session.try_render_program_at(scale, app.session.playhead()).map_err(|e| e.to_string())?,
+    };
     if img.w == 0 || img.h == 0 {
         return Err("the sequence rendered an empty frame".into());
     }
@@ -904,6 +917,63 @@ mod codex_render_preview_tests {
         let (req, _) = ControlRequest::new("ui.renderPreview", json!({"path": path_s, "region": [0, 0]}));
         let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), &req) else { panic!("answers at once") };
         assert_eq!(reply["ok"], false);
+    }
+
+    fn preview(app: &mut FilmcraftApp, params: Value) -> Value {
+        let (req, _) = ControlRequest::new("ui.renderPreview", params);
+        let Outcome::Done(reply) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| handle(app, &egui::Context::default(), &req)))
+            .expect("hostile preview parameters must not panic")
+        else {
+            panic!("renders at once")
+        };
+        reply
+    }
+
+    #[test]
+    fn codex_render_preview_item_renders_media_without_touching_the_sequence() {
+        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let _ = app.session.execute("file.openDemoProject", json!({}));
+        let Some(item) = app
+            .session
+            .project
+            .items
+            .values()
+            .find(|i| matches!(&i.kind, filmcraft_project::ItemKind::Media(m) if m.info.video.is_some()))
+            .map(|i| i.id)
+        else {
+            panic!("the demo has video media")
+        };
+        let Some(filmcraft_project::ItemKind::Media(m)) = app.session.project.item(item).map(|i| &i.kind) else { panic!("media") };
+        let (mw, mh) = m.info.video.as_ref().map(|v| (v.width, v.height)).unwrap_or_default();
+        let (playhead, revision) = (app.session.playhead(), app.session.revision);
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("i.png").to_string_lossy().to_string();
+        let r = preview(&mut app, json!({"path": path, "item": item.0, "seconds": 0.5}));
+        assert_eq!(r["ok"], true, "{r}");
+        let long = mw.max(mh);
+        let want = |v: u32| (f64::from(v) * (512.0 / f64::from(long)).min(1.0)).round() as i64;
+        let (gw, gh) = (r["result"]["width"].as_i64().unwrap_or(0), r["result"]["height"].as_i64().unwrap_or(0));
+        assert!((gw - want(mw)).abs() <= 1 && (gh - want(mh)).abs() <= 1, "{gw}x{gh} for media {mw}x{mh}");
+        assert_eq!((app.session.playhead(), app.session.revision), (playhead, revision));
+        let r = preview(&mut app, json!({"path": path, "item": item.0, "maxSide": 0, "region": [0, 0, mw / 4, mh / 4]}));
+        assert_eq!((r["result"]["width"].as_u64(), r["result"]["height"].as_u64()), (Some(u64::from(mw / 4)), Some(u64::from(mh / 4))), "{r}");
+        for bad in [
+            json!({"item": 999_999}),
+            json!({"item": "x"}),
+            json!({"item": -1}),
+            json!({"item": item.0, "seconds": -1}),
+            json!({"item": item.0, "seconds": 1e300}),
+            json!({"item": item.0, "seconds": "NaN"}),
+            json!({"item": item.0, "region": [mw * 2, 0, 10, 10]}),
+            json!({"item": item.0, "region": [0, 0]}),
+        ] {
+            let mut params = bad.clone();
+            params["path"] = json!(path);
+            assert_eq!(preview(&mut app, params)["ok"], false, "{bad}");
+        }
+        // A sequence is not a media item, and nothing without video is either.
+        let seq = app.session.state.active_sequence.map(|s| s.0).unwrap_or(0);
+        assert_eq!(preview(&mut app, json!({"path": path, "item": seq}))["ok"], false);
     }
 }
 

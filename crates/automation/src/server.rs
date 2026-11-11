@@ -100,6 +100,10 @@ pub struct PreviewParams {
     /// as `max_side` allows (to look at details without changing the project).
     #[serde(default)]
     pub region: Option<[f64; 4]>,
+    /// A project media item id (from `project_inspect`): render that item's own frame at `seconds`
+    /// of its media (default 0; `max_side` default 512) instead of the sequence. Places nothing.
+    #[serde(default)]
+    pub item: Option<u64>,
 }
 
 #[derive(Debug, Default, Deserialize, JsonSchema)]
@@ -419,13 +423,30 @@ impl FilmcraftMcp {
 
     #[tool(
         title = "Render a preview",
-        description = "The active sequence's frame at `seconds` (default: the playhead) rendered by the engine as PNG, or only a `region` [x, y, width, height] of it in sequence pixels, to see details. Read-only: the playhead does not move.",
+        description = "The active sequence's frame at `seconds` (default: the playhead) rendered by the engine as PNG, or only a `region` [x, y, width, height] of it in sequence pixels, to see details. With `item` (a media item id from project_inspect) it shows that clip's own frame at `seconds` of the media (default 0, `max_side` default 512; `region` in media pixels) without placing it in the sequence: use it to look at imported footage before editing. Read-only: sequence, playhead and Source monitor do not change.",
         annotations(read_only_hint = true, destructive_hint = false, idempotent_hint = true, open_world_hint = false)
     )]
     async fn render_preview(&self, Parameters(p): Parameters<PreviewParams>) -> Result<CallToolResult, McpError> {
         let Backend::Bridge(b) = &*self.backend else {
             if p.region.is_some() {
                 return Ok(fail("`region` is only supported in bridge mode"));
+            }
+            if let Some(item) = p.item {
+                let s = s.clone();
+                let max = p.max_side.unwrap_or(512);
+                let r = tokio::task::spawn_blocking(move || -> Result<Vec<u8>, AutomationError> {
+                    let g = s.lock().unwrap_or_else(PoisonError::into_inner);
+                    let id = filmcraft_engine::project::ItemId(item);
+                    let (w, h) = g.media_frame_size(id).map_err(AutomationError::Other)?;
+                    let img = g.render_media_frame(id, p.seconds.unwrap_or(0.0), render_scale(max, w, h)).map_err(AutomationError::Other)?;
+                    png_rgba(img.w as u32, img.h as u32, img.over_black_rgba8(), max)
+                })
+                .await
+                .unwrap_or_else(|e| Err(join_error(e)));
+                return Ok(match r {
+                    Ok(png) => png_result(&png, "rendered frame of the media item"),
+                    Err(e) => fail(e),
+                });
             }
             return self.render_frame(Parameters(RenderParams { seconds: p.seconds, max_side: p.max_side })).await;
         };
@@ -435,7 +456,7 @@ impl FilmcraftMcp {
             Err(e) => return Ok(fail(format!("render_preview: {e}"))),
         };
         let path = dir.path().join("preview.png");
-        let params = json!({"path": path.to_string_lossy(), "seconds": p.seconds, "maxSide": p.max_side.unwrap_or(960), "region": p.region});
+        let params = json!({"path": path.to_string_lossy(), "seconds": p.seconds, "maxSide": p.max_side.unwrap_or(if p.item.is_some() { 512 } else { 960 }), "region": p.region, "item": p.item});
         if let Err(e) = b.call("ui.renderPreview", params).await {
             return Ok(fail(e));
         }

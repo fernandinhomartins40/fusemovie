@@ -1243,6 +1243,32 @@ impl Session {
         self.media.source_for(&self.project, item, &*self.services)
     }
 
+    /// Pixel size of a project media item's video, for [`Session::render_media_frame`].
+    pub fn media_frame_size(&self, item: ItemId) -> std::result::Result<(u32, u32), String> {
+        let Some(filmcraft_project::ItemKind::Media(m)) = self.project.item(item).map(|i| &i.kind) else {
+            return Err(format!("item {} is not a media item of the project", item.0));
+        };
+        m.info.video.as_ref().map(|v| (v.width, v.height)).ok_or_else(|| "the item has no video".to_string())
+    }
+
+    /// A media item's frame at media time `seconds` as the Source monitor decodes it (SDR Rec. 709),
+    /// without touching the sequence, playhead or Source monitor. Hostile input is an error.
+    pub fn render_media_frame(&self, item: ItemId, seconds: f64, scale: f32) -> std::result::Result<filmcraft_render::Image, String> {
+        self.media_frame_size(item)?;
+        let dur = self.project.item(item).map_or(0.0, |i| i.duration().0 as f64 / filmcraft_time::TICKS_PER_SECOND as f64);
+        if !seconds.is_finite() || seconds < 0.0 {
+            return Err("`seconds` must be a finite, non-negative number for an `item`".into());
+        }
+        if dur > 0.0 && seconds > dur {
+            return Err(format!("`seconds` is beyond the end of the item ({dur:.3} s)"));
+        }
+        let provider = self.media.provider(self.project.clone(), self.services.clone());
+        let t = filmcraft_time::Tick::from_seconds_f64(seconds);
+        filmcraft_render::render_item(&self.project, item, t, scale, &provider)
+            .filter(|i| i.w > 0 && i.h > 0)
+            .ok_or_else(|| "cannot decode a video frame of the item".to_string())
+    }
+
     /// Render the active sequence at the playhead in its working colour space (HDR values kept;
     /// for scopes and analysis).
     pub fn render_program_working(&self, scale: f32) -> Option<filmcraft_render::Image> {
