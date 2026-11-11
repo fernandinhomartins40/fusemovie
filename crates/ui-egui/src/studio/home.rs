@@ -25,6 +25,7 @@ enum Act {
     NewProject,
     Open,
     Settings,
+    CreateAi,
     Format(usize),
     Recent(String),
     Drop(Vec<String>),
@@ -74,6 +75,7 @@ fn run(app: &mut FilmcraftApp, ctx: &egui::Context, act: Act) {
         }
         Act::Open => crate::menus::invoke(app, ctx, "file.open", json!({})).map(|_| ()),
         Act::Settings => crate::menus::invoke(app, ctx, "app.settings", json!({})).map(|_| ()),
+        Act::CreateAi => crate::menus::invoke(app, ctx, crate::create_ai::COMMAND, json!({})).map(|_| ()),
         Act::Format(i) => super::new_doc::create(app, ctx, &super::new_doc::Draft::for_format(i, 0)),
         Act::Recent(path) => crate::menus::invoke(app, ctx, "file.open", json!({"path": path})).map(|v| {
             // with unsaved changes Save / Don't Save / Cancel is asked first and Home stays
@@ -138,7 +140,7 @@ fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, l
     if enabled { resp.on_hover_cursor(egui::CursorIcon::PointingHand) } else { resp }
 }
 
-/// Product name, then Home (selected), New project, Open project, Create with AI (coming soon);
+/// Product name, then Home (selected), New project, Open project, Create with AI;
 /// Settings at the foot.
 fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut Option<Act>) {
     let t = app.tokens;
@@ -154,7 +156,9 @@ fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut 
         *act = Some(Act::Open);
     }
     let ai = row(top + 126.0);
-    rail_item(app, ui, ai, ("createAi", Icon::Sparkle, tl!("Create with AI")), false, false).on_hover_text(tl!("Coming soon"));
+    if rail_item(app, ui, ai, ("createAi", Icon::Sparkle, tl!("Create with AI")), false, true).clicked() {
+        *act = Some(Act::CreateAi);
+    }
     let foot = rail.bottom() - 50.0;
     if foot > ai.bottom() + 16.0 {
         ui.painter().hline(x.clone(), foot - 8.0, Stroke::new(1.0, t.separator));

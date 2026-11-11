@@ -121,6 +121,8 @@ pub const UI_COMMANDS: &[UiCommand] = &[
     uic!("window.classicLayout", "Classic Layout", ["Window"], None),
     uic!("view.appearanceMode.next", "Next Appearance Mode", ["View", "Appearance"], None),
     uic!("window.codex", "Codex", ["Window"], None),
+    // File ▸ Create with AI (`crate::create_ai`): Codex assembles a first cut from clips and a briefing
+    uic!("file.createWithAi", "Create with AI", ["File"], None),
     uic!("window.workspace.editing", "Editing", ["Window", "Workspaces"], Some("Alt+Shift+1")),
     uic!("window.workspace.assembly", "Assembly", ["Window", "Workspaces"], Some("Alt+Shift+2")),
     uic!("window.workspace.color", "Color", ["Window", "Workspaces"], Some("Alt+Shift+3")),
@@ -502,6 +504,10 @@ pub fn invoke_command(app: &mut FilmcraftApp, ctx: &egui::Context, id: &str, mut
         }
         "mode.export" => {
             app.ui.mode = Mode::Export;
+            return Ok(Value::Null);
+        }
+        "file.createWithAi" => {
+            crate::create_ai::open(app);
             return Ok(Value::Null);
         }
         "window.codex" => {

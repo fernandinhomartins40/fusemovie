@@ -14,14 +14,22 @@ impl FilmcraftApp {
             self.file_drag_hover = self.drop_pointer(ctx, egui::ViewportId::ROOT, None).map(|p| (hovering, p, egui::ViewportId::ROOT));
         }
         let dropped = ctx.input(|i| i.raw.dropped_files.clone());
-        if !dropped.is_empty() {
+        // Create with AI's dialog takes them as its clips; a run takes them and does nothing
+        if !dropped.is_empty() && crate::create_ai::take_drop(self, &dropped) {
+            // Home reads the raw drops too: they are spoken for
+            ctx.input_mut(|i| i.raw.dropped_files.clear());
+        } else if !dropped.is_empty() {
             let pointer = self.drop_pointer(ctx, egui::ViewportId::ROOT, None);
             // files dropped on the Codex chat are its attachments, not imports
             if !crate::codex_panel::take_drop(self, &dropped, pointer) {
                 self.import_dropped(ctx, &dropped, pointer.map(|p| (p, egui::ViewportId::ROOT)));
             }
         }
-        for files in std::mem::take(&mut self.window_files) {
+        let window_files = std::mem::take(&mut self.window_files);
+        if self.create_ai.locked() {
+            return;
+        }
+        for files in window_files {
             // Only the Timeline places files at the pointer; elsewhere they go to the bin.
             let at_timeline = to_timeline && files.panel == PanelKind::Timeline;
             let pointer = if at_timeline { self.drop_pointer(ctx, files.viewport, files.pos) } else { None };
