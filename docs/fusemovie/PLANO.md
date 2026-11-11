@@ -1,7 +1,7 @@
 # Fusemovie: plano
 
 Fork de `storytold/filmcraft` (espelha o Adobe Premiere Pro), seguindo o roteiro da família Fuse em
-`C:\FuseDevuseopenphoto\docsuse-suite\` (README, 00-playbook, 01-codex, 02-studio-design,
+`C:/FuseDev/fuseopenphoto/docs/fuse-suite/` (README, 00-playbook, 01-codex, 02-studio-design,
 03-build-release, 04-licoes e `apps/filmcraft.md`). Nome do produto: **Fusemovie**.
 
 Atualizado em 2026-11-11 sobre o commit `39018254` do branch `studio-redesign`. Este arquivo diz o que
