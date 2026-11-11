@@ -79,7 +79,7 @@ claude mcp add filmcraft -- filmcraft-cli mcp
 | `command_run` | both | run a command `{id, params}`; edits are undoable |
 | `command_batch` | both | run several commands in order `{steps: [{id, params}], stop_on_error}` → `{completed, failed, results}` |
 | `doc_inspect` | both | the project tree and the active sequence in one call (`project_inspect` + `sequence_inspect`) |
-| `render_preview` | both | same as `render_frame` |
+| `render_preview` | both | same as `render_frame`; `region` (bridge only) crops; `item` (a media item id) shows that clip's own frame at `seconds` of the media (default 0, `max_side` default 512) without placing it in the sequence |
 | `project_inspect` | both | bins and items with ids, types, durations; active sequence |
 | `sequence_inspect` | both | the active sequence: tracks, clips (`start` / `end` and `sourceIn` / `sourceOut` in ticks, frames, `speed`, `reverse`: the clip plays its `sourceIn` to `sourceOut` stretch backward, `gainDb`), effects, transitions, markers (name and `comment`), playhead, selection |
 | `media_import` | both | import files by absolute path (`paths`, an array; optional `bin`, `image_sequence`) |

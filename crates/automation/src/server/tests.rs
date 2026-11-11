@@ -515,7 +515,8 @@ async fn codex_headless_render_preview_item_renders_media_and_refuses_hostile_in
     let p = |item, seconds| PreviewParams { seconds, max_side: Some(64), region: None, item };
     let v = serde_json::to_value(m.render_preview(Parameters(p(Some(id), Some(0.5)))).await.unwrap()).unwrap();
     assert_eq!(v["content"][0]["type"], "image", "{v}");
-    let png = base64_decode(v["content"][0]["data"].as_str().unwrap());
+    use base64::Engine as _;
+    let png = base64::engine::general_purpose::STANDARD.decode(v["content"][0]["data"].as_str().unwrap()).unwrap();
     let img = image::load_from_memory(&png).unwrap();
     let k = 64.0 / f64::from(w.max(h));
     assert!((i64::from(img.width()) - (f64::from(w) * k).round() as i64).abs() <= 1, "{}x{} for {w}x{h}", img.width(), img.height());
