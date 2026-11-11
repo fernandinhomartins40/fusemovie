@@ -9,39 +9,6 @@ use crate::FilmcraftApp;
 use crate::icons::Icon;
 use crate::theme::Tokens;
 
-/// The Studio colours of 02-studio-design.md until the theme has them.
-// integrator: switch to theme::Tokens
-pub(super) struct Pal {
-    pub canvas: Color32,
-    pub chrome: Color32,
-    pub card: Color32,
-    pub border: Color32,
-    pub field: Color32,
-    pub field_border: Color32,
-    pub hover: Color32,
-    pub text: Color32,
-    pub text_dim: Color32,
-    pub text_faint: Color32,
-    pub accent: Color32,
-    pub primary_text: Color32,
-}
-
-// integrator: switch to theme::Tokens
-pub(super) const PAL: Pal = Pal {
-    canvas: Color32::from_rgb(19, 20, 20),
-    chrome: Color32::from_rgb(29, 29, 30),
-    card: Color32::from_rgb(35, 35, 36),
-    border: Color32::from_rgb(54, 54, 56),
-    field: Color32::from_rgb(28, 28, 29),
-    field_border: Color32::from_rgb(72, 72, 74),
-    hover: Color32::from_rgb(48, 48, 50),
-    text: Color32::from_gray(240),
-    text_dim: Color32::from_gray(170),
-    text_faint: Color32::from_gray(110),
-    accent: Color32::from_rgb(253, 181, 40),
-    primary_text: Color32::from_gray(18),
-};
-
 pub(super) const RADIUS: f32 = 10.0;
 pub(super) const BRAND: &str = env!("FILMCRAFT_BRAND_NAME");
 /// Recent projects listed at most.
@@ -71,12 +38,12 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     }
     let area = ui.available_rect_before_wrap();
     let c = compact(area);
-    ui.painter().rect_filled(area, 0.0, PAL.canvas);
+    ui.painter().rect_filled(area, 0.0, t.canvas);
     let mut act = None;
 
     let rail = Rect::from_min_max(area.min, pos2(area.left() + if c { 184.0 } else { 216.0 }, area.bottom()));
-    ui.painter().rect_filled(rail, 0.0, PAL.chrome);
-    ui.painter().vline(rail.right(), rail.y_range(), Stroke::new(1.0, PAL.border));
+    ui.painter().rect_filled(rail, 0.0, t.chrome);
+    ui.painter().vline(rail.right(), rail.y_range(), Stroke::new(1.0, t.separator));
     render_rail(app, ui, rail, &mut act);
 
     let pad = if c { 24.0 } else { 40.0 };
@@ -152,16 +119,16 @@ fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, l
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, enabled, label));
     app.auto.add(&format!("home.rail.{id}"), rect, label);
     let ink = if selected {
-        PAL.primary_text
+        t.primary_text
     } else if enabled {
-        PAL.text
+        t.text
     } else {
-        PAL.text_faint
+        t.text_faint
     };
     if selected {
-        ui.painter().rect_filled(rect, RADIUS, PAL.accent);
+        ui.painter().rect_filled(rect, RADIUS, t.accent);
     } else if enabled && resp.hovered() {
-        ui.painter().rect_filled(rect, RADIUS, PAL.hover);
+        ui.painter().rect_filled(rect, RADIUS, t.hover);
     }
     crate::icons::paint(ui.painter(), Rect::from_center_size(pos2(rect.left() + 20.0, rect.center().y), vec2(16.0, 16.0)), icon, ink);
     let font = if selected { Tokens::semibold(13.5) } else { Tokens::ui(13.5) };
@@ -172,7 +139,7 @@ fn rail_item(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect, (id, icon, l
 /// Product name, then Home (selected), New project, Open project, Create with AI (coming soon);
 /// Settings at the foot.
 fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut Option<Act>) {
-    ui.painter().text(pos2(rail.left() + 22.0, rail.top() + 30.0), Align2::LEFT_CENTER, BRAND, Tokens::semibold(16.0), PAL.text);
+    ui.painter().text(pos2(rail.left() + 22.0, rail.top() + 30.0), Align2::LEFT_CENTER, BRAND, Tokens::semibold(16.0), t.text);
     let x = rail.left() + 10.0..=rail.right() - 10.0;
     let row = |y: f32| Rect::from_x_y_ranges(x.clone(), y..=y + 36.0);
     let top = rail.top() + 60.0;
@@ -187,7 +154,7 @@ fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut 
     rail_item(app, ui, ai, ("createAi", Icon::Sparkle, tl!("Create with AI")), false, false).on_hover_text(tl!("Coming soon"));
     let foot = rail.bottom() - 50.0;
     if foot > ai.bottom() + 16.0 {
-        ui.painter().hline(x.clone(), foot - 8.0, Stroke::new(1.0, PAL.border));
+        ui.painter().hline(x.clone(), foot - 8.0, Stroke::new(1.0, t.separator));
         if rail_item(app, ui, row(foot), ("settings", Icon::Gear, tl!("Settings")), false, true).clicked() {
             *act = Some(Act::Settings);
         }
@@ -197,7 +164,7 @@ fn render_rail(app: &mut FilmcraftApp, ui: &mut egui::Ui, rail: Rect, act: &mut 
 /// A rounded icon + label button `h` tall at `min`: amber when `primary`, a card otherwise.
 pub(super) fn button(app: &mut FilmcraftApp, ui: &mut egui::Ui, (min, h): (egui::Pos2, f32), id: &str, label: &str, icon: Option<Icon>, primary: bool) -> Response {
     let font = if primary { Tokens::semibold(14.0) } else { Tokens::ui(13.5) };
-    let ink = if primary { PAL.primary_text } else { PAL.text };
+    let ink = if primary { t.primary_text } else { t.text };
     let galley = ui.painter().layout_no_wrap(label.to_owned(), font, ink);
     let icon_w = if icon.is_some() { 24.0 } else { 0.0 };
     let rect = Rect::from_min_size(min, vec2(galley.size().x + icon_w + 36.0, h));
@@ -205,9 +172,9 @@ pub(super) fn button(app: &mut FilmcraftApp, ui: &mut egui::Ui, (min, h): (egui:
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, label));
     app.auto.add(id, rect, label);
     let (fill, stroke) = match (primary, resp.hovered()) {
-        (true, false) => (PAL.accent, Stroke::NONE),
-        (true, true) => (PAL.accent.gamma_multiply(0.9), Stroke::NONE),
-        (false, hov) => (if hov { PAL.hover } else { PAL.card }, Stroke::new(1.0, PAL.field_border)),
+        (true, false) => (t.accent, Stroke::NONE),
+        (true, true) => (t.accent.gamma_multiply(0.9), Stroke::NONE),
+        (false, hov) => (if hov { t.hover } else { t.card }, Stroke::new(1.0, t.field_border)),
     };
     ui.painter().rect(rect, RADIUS, fill, stroke, StrokeKind::Inside);
     let x = rect.left() + 18.0;
@@ -229,10 +196,10 @@ pub(super) fn paragraph(ui: &egui::Ui, min: egui::Pos2, w: f32, text: &str, font
 /// The hero, its buttons, the drop zone and the recent projects.
 fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, act: &mut Option<Act>) {
     let mut y = left.top();
-    y += paragraph(ui, pos2(left.left(), y), left.width(), tl!("What shall we create today?"), Tokens::semibold(if c { 22.0 } else { 28.0 }), PAL.text);
+    y += paragraph(ui, pos2(left.left(), y), left.width(), tl!("What shall we create today?"), Tokens::semibold(if c { 22.0 } else { 28.0 }), t.text);
     y += 6.0;
     let sub = tlf!("Start a new {name} project, open one, or drop media to begin.", name = BRAND);
-    y += paragraph(ui, pos2(left.left(), y), left.width(), &sub, Tokens::ui(14.0), PAL.text_dim);
+    y += paragraph(ui, pos2(left.left(), y), left.width(), &sub, Tokens::ui(14.0), t.text_dim);
     y += if c { 16.0 } else { 24.0 };
     let bh = if c { 36.0 } else { 40.0 };
     let new = button(app, ui, (pos2(left.left(), y), bh), "home.newProject", tl!("New Project"), Some(Icon::Plus), true);
@@ -254,17 +221,17 @@ fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, a
     }
     y = drop.bottom() + 18.0;
 
-    ui.painter().text(pos2(left.left(), y + 10.0), Align2::LEFT_CENTER, tl!("Recent"), Tokens::semibold(14.0), PAL.text);
+    ui.painter().text(pos2(left.left(), y + 10.0), Align2::LEFT_CENTER, tl!("Recent"), Tokens::semibold(14.0), t.text);
     y += 28.0;
     if recent.is_empty() {
         let r = Rect::from_min_size(pos2(left.left(), y), vec2(left.width(), RECENT_ROW));
-        crate::icons::paint(ui.painter(), Rect::from_center_size(pos2(r.left() + 10.0, r.center().y), vec2(14.0, 14.0)), Icon::Sequence, PAL.text_faint);
+        crate::icons::paint(ui.painter(), Rect::from_center_size(pos2(r.left() + 10.0, r.center().y), vec2(14.0, 14.0)), Icon::Sequence, t.text_faint);
         ui.painter().with_clip_rect(r).text(
             pos2(r.left() + 30.0, r.center().y),
             Align2::LEFT_CENTER,
             tl!("Your recent projects will appear here."),
             Tokens::ui(13.0),
-            PAL.text_dim,
+            t.text_dim,
         );
         return;
     }
@@ -278,14 +245,14 @@ fn render_main(app: &mut FilmcraftApp, ui: &mut egui::Ui, left: Rect, c: bool, a
         resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, &name));
         app.auto.add(&format!("home.recent.{i}"), r, &name);
         if resp.hovered() {
-            ui.painter().rect_filled(r, RADIUS - 2.0, PAL.hover);
+            ui.painter().rect_filled(r, RADIUS - 2.0, t.hover);
         }
         let p = ui.painter().with_clip_rect(r);
         // shortcut: a project has no thumbnail yet, so every row shows the sequence icon
-        crate::icons::paint(&p, Rect::from_center_size(pos2(r.left() + 16.0, r.center().y), vec2(16.0, 16.0)), Icon::Sequence, PAL.text_dim);
-        let n = p.text(pos2(r.left() + 36.0, r.center().y), Align2::LEFT_CENTER, &name, Tokens::ui(13.5), PAL.text);
+        crate::icons::paint(&p, Rect::from_center_size(pos2(r.left() + 16.0, r.center().y), vec2(16.0, 16.0)), Icon::Sequence, t.text_dim);
+        let n = p.text(pos2(r.left() + 36.0, r.center().y), Align2::LEFT_CENTER, &name, Tokens::ui(13.5), t.text);
         if let Some(folder) = std::path::Path::new(path).parent() {
-            p.text(pos2(n.right() + 12.0, r.center().y), Align2::LEFT_CENTER, folder.to_string_lossy(), Tokens::ui(12.5), PAL.text_faint);
+            p.text(pos2(n.right() + 12.0, r.center().y), Align2::LEFT_CENTER, folder.to_string_lossy(), Tokens::ui(12.5), t.text_faint);
         }
         if resp.clicked() {
             *act = Some(Act::Recent(path.clone()));
@@ -302,10 +269,10 @@ fn drop_zone(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool) -> Res
     let lit = resp.hovered() || ui.input(|i| !i.raw.hovered_files.is_empty());
     let p = ui.painter();
     if lit {
-        p.rect_filled(r, 12.0, PAL.hover);
+        p.rect_filled(r, 12.0, t.hover);
     }
-    p.extend(egui::Shape::dashed_line(&rounded_outline(r.shrink(0.5), 12.0), Stroke::new(1.0, if lit { PAL.accent } else { PAL.field_border }), 6.0, 5.0));
-    let ink = if lit { PAL.accent } else { PAL.text_dim };
+    p.extend(egui::Shape::dashed_line(&rounded_outline(r.shrink(0.5), 12.0), Stroke::new(1.0, if lit { t.accent } else { t.field_border }), 6.0, 5.0));
+    let ink = if lit { t.accent } else { t.text_dim };
     let icon = if c { 26.0 } else { 34.0 };
     let block = icon + 14.0 + 20.0 + 20.0;
     let mut y = r.center().y - block / 2.0;
@@ -315,17 +282,17 @@ fn drop_zone(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool) -> Res
     } else {
         y = r.center().y - 20.0;
     }
-    p.text(pos2(r.center().x, y + 10.0), Align2::CENTER_CENTER, label, Tokens::semibold(14.0), PAL.text);
+    p.text(pos2(r.center().x, y + 10.0), Align2::CENTER_CENTER, label, Tokens::semibold(14.0), t.text);
     let or = format!("{} ", tl!("or"));
     let link = tl!("open a project");
-    let g_or = p.layout_no_wrap(or, Tokens::ui(13.0), PAL.text_dim);
-    let g_link = p.layout_no_wrap(link.to_owned(), Tokens::ui(13.0), PAL.accent);
+    let g_or = p.layout_no_wrap(or, Tokens::ui(13.0), t.text_dim);
+    let g_link = p.layout_no_wrap(link.to_owned(), Tokens::ui(13.0), t.accent);
     let x = r.center().x - (g_or.size().x + g_link.size().x) / 2.0;
     let ly = y + 30.0 - g_or.size().y / 2.0;
     let lx = x + g_or.size().x;
-    p.hline(lx..=lx + g_link.size().x, ly + g_link.size().y, Stroke::new(1.0, PAL.accent));
-    p.galley(pos2(x, ly), g_or, PAL.text_dim);
-    p.galley(pos2(lx, ly), g_link, PAL.accent);
+    p.hline(lx..=lx + g_link.size().x, ly + g_link.size().y, Stroke::new(1.0, t.accent));
+    p.galley(pos2(x, ly), g_or, t.text_dim);
+    p.galley(pos2(lx, ly), g_link, t.accent);
     resp
 }
 
@@ -358,8 +325,8 @@ fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, right: Rect, c: boo
     let row_h = if c { 46.0 } else { 54.0 };
     let n = super::new_doc::FORMATS.len() as f32;
     let card = Rect::from_min_size(right.min, vec2(right.width(), (44.0 + n * (row_h + 4.0) + 8.0).min(right.height())));
-    ui.painter().rect(card, 12.0, PAL.chrome, Stroke::new(1.0, PAL.border), StrokeKind::Inside);
-    ui.painter().text(pos2(card.left() + 16.0, card.top() + 24.0), Align2::LEFT_CENTER, tl!("Start with a format"), Tokens::semibold(14.0), PAL.text);
+    ui.painter().rect(card, 12.0, t.chrome, Stroke::new(1.0, t.separator), StrokeKind::Inside);
+    ui.painter().text(pos2(card.left() + 16.0, card.top() + 24.0), Align2::LEFT_CENTER, tl!("Start with a format"), Tokens::semibold(14.0), t.text);
     for (i, f) in super::new_doc::FORMATS.iter().enumerate() {
         let r = Rect::from_min_size(pos2(card.left() + 8.0, card.top() + 44.0 + i as f32 * (row_h + 4.0)), vec2(card.width() - 16.0, row_h));
         if r.bottom() > card.bottom() {
@@ -371,14 +338,14 @@ fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, right: Rect, c: boo
         app.auto.add(&format!("home.format.{i}"), r, name);
         let hov = resp.hovered();
         let p = ui.painter().with_clip_rect(r);
-        p.rect(r, RADIUS - 2.0, if hov { PAL.hover } else { PAL.card }, Stroke::new(1.0, PAL.border), StrokeKind::Inside);
+        p.rect(r, RADIUS - 2.0, if hov { t.hover } else { t.card }, Stroke::new(1.0, t.separator), StrokeKind::Inside);
         let (w, h, _) = f.presets.first().copied().unwrap_or((1920, 1080, 30.0));
         let frame = frame_icon(pos2(r.left() + 26.0, r.center().y), vec2(26.0, 20.0), w, h);
-        p.rect_stroke(frame, 2.0, Stroke::new(1.0, if hov { PAL.accent } else { PAL.text_dim }), StrokeKind::Inside);
-        p.vline(r.left() + 50.0, (r.center().y - 12.0)..=(r.center().y + 12.0), Stroke::new(1.0, PAL.border));
-        p.text(pos2(r.left() + 62.0, r.center().y - 9.0), Align2::LEFT_CENTER, name, Tokens::semibold(13.0), PAL.text);
-        p.text(pos2(r.left() + 62.0, r.center().y + 9.0), Align2::LEFT_CENTER, format!("{w} × {h} · {}", crate::i18n::t(f.note)), Tokens::ui(12.0), PAL.text_dim);
-        crate::icons::paint(&p, Rect::from_center_size(pos2(r.right() - 16.0, r.center().y), vec2(12.0, 12.0)), Icon::ChevronRight, PAL.text_dim);
+        p.rect_stroke(frame, 2.0, Stroke::new(1.0, if hov { t.accent } else { t.text_dim }), StrokeKind::Inside);
+        p.vline(r.left() + 50.0, (r.center().y - 12.0)..=(r.center().y + 12.0), Stroke::new(1.0, t.separator));
+        p.text(pos2(r.left() + 62.0, r.center().y - 9.0), Align2::LEFT_CENTER, name, Tokens::semibold(13.0), t.text);
+        p.text(pos2(r.left() + 62.0, r.center().y + 9.0), Align2::LEFT_CENTER, format!("{w} × {h} · {}", crate::i18n::t(f.note)), Tokens::ui(12.0), t.text_dim);
+        crate::icons::paint(&p, Rect::from_center_size(pos2(r.right() - 16.0, r.center().y), vec2(12.0, 12.0)), Icon::ChevronRight, t.text_dim);
         if resp.clicked() {
             *act = Some(Act::Format(i));
         }

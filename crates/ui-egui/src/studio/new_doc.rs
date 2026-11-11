@@ -5,7 +5,7 @@
 use egui::{Align2, Rect, Sense, Stroke, StrokeKind, pos2, vec2};
 use serde_json::json;
 
-use super::home::{PAL, RADIUS, button, compact, frame_icon, paragraph};
+use super::home::{RADIUS, button, compact, frame_icon, paragraph};
 use crate::FilmcraftApp;
 use crate::icons::Icon;
 use crate::theme::Tokens;
@@ -130,7 +130,7 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     let mut d = ctx.data(|m| m.get_temp::<Draft>(id())).unwrap_or_else(|| Draft::for_format(0, 0));
     let area = ui.available_rect_before_wrap();
     let c = compact(area);
-    ui.painter().rect_filled(area, 0.0, PAL.canvas);
+    ui.painter().rect_filled(area, 0.0, t.canvas);
 
     let foot = Rect::from_min_max(pos2(area.left(), area.bottom() - if c { 56.0 } else { 64.0 }), area.max);
     let formats = Rect::from_min_max(area.min, pos2(area.left() + if c { 184.0 } else { 224.0 }, foot.top()));
@@ -138,9 +138,9 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     let settings = Rect::from_min_max(pos2(area.right() - if c { 290.0 } else { 360.0 }, area.top()), pos2(area.right(), foot.top()));
     let center = Rect::from_min_max(pos2(presets.right(), area.top()), pos2(settings.left(), foot.top()));
     for r in [formats, presets, settings, foot] {
-        ui.painter().rect_filled(r, 0.0, PAL.chrome);
+        ui.painter().rect_filled(r, 0.0, t.chrome);
     }
-    let line = Stroke::new(1.0, PAL.border);
+    let line = Stroke::new(1.0, t.separator);
     ui.painter().vline(formats.right(), formats.y_range(), line);
     ui.painter().vline(presets.right(), presets.y_range(), line);
     ui.painter().vline(settings.left(), settings.y_range(), line);
@@ -156,11 +156,11 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
     let back = button(app, ui, (pos2(foot.left() + 20.0, foot.center().y - bh / 2.0), bh), "newDoc.back", tl!("Back"), None, false);
     let ch = if c { 38.0 } else { 42.0 };
     let label = tl!("Create");
-    let cw = ui.painter().layout_no_wrap(label.to_owned(), Tokens::semibold(14.0), PAL.text).size().x + 24.0 + 36.0;
+    let cw = ui.painter().layout_no_wrap(label.to_owned(), Tokens::semibold(14.0), t.text).size().x + 24.0 + 36.0;
     let create_at = pos2(foot.right() - 20.0 - cw, foot.center().y - ch / 2.0);
     let made = button(app, ui, (create_at, ch), "newDoc.create", label, Some(Icon::Plus), true);
     let text = if d.error.is_empty() { summary(&d) } else { d.error.clone() };
-    let color = if d.error.is_empty() { PAL.text_dim } else { app.tokens.danger };
+    let color = if d.error.is_empty() { t.text_dim } else { app.tokens.danger };
     let room = Rect::from_min_max(pos2(back.rect.right() + 20.0, foot.top()), pos2(made.rect.left() - 20.0, foot.bottom()));
     ui.painter().with_clip_rect(room).text(pos2(room.right(), foot.center().y), Align2::RIGHT_CENTER, text, Tokens::ui(13.0), color);
 
@@ -179,7 +179,7 @@ pub(crate) fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
 }
 
 fn section_title(ui: &egui::Ui, r: Rect, text: &str) {
-    ui.painter().text(pos2(r.left() + 20.0, r.top() + 30.0), Align2::LEFT_CENTER, text, Tokens::semibold(14.0), PAL.text);
+    ui.painter().text(pos2(r.left() + 20.0, r.top() + 30.0), Align2::LEFT_CENTER, text, Tokens::semibold(14.0), t.text);
 }
 
 /// The formats: a row each, the chosen one in amber; a click picks its first preset.
@@ -192,11 +192,11 @@ fn render_formats(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, d: &mut Dr
         resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, name));
         app.auto.add(&format!("newDoc.format.{i}"), row, name);
         let on = d.format == i;
-        let ink = if on { PAL.primary_text } else { PAL.text };
+        let ink = if on { t.primary_text } else { t.text };
         if on {
-            ui.painter().rect_filled(row, RADIUS, PAL.accent);
+            ui.painter().rect_filled(row, RADIUS, t.accent);
         } else if resp.hovered() {
-            ui.painter().rect_filled(row, RADIUS, PAL.hover);
+            ui.painter().rect_filled(row, RADIUS, t.hover);
         }
         let (w, h, _) = f.presets.first().copied().unwrap_or((16, 9, 30.0));
         ui.painter().rect_stroke(frame_icon(pos2(row.left() + 18.0, row.center().y), vec2(18.0, 16.0), w, h), 2.0, Stroke::new(1.0, ink), StrokeKind::Inside);
@@ -223,13 +223,13 @@ fn render_presets(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, d
         resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, &label));
         app.auto.add(&format!("newDoc.preset.{i}"), card, &label);
         let on = chosen == Some(i);
-        let stroke = Stroke::new(1.0, if on { PAL.accent } else { PAL.border });
-        ui.painter().rect(card, RADIUS, if resp.hovered() { PAL.hover } else { PAL.card }, stroke, StrokeKind::Inside);
+        let stroke = Stroke::new(1.0, if on { t.accent } else { t.separator });
+        ui.painter().rect(card, RADIUS, if resp.hovered() { t.hover } else { t.card }, stroke, StrokeKind::Inside);
         let p = ui.painter().with_clip_rect(card);
         let top = card.top() + if c { 16.0 } else { 20.0 };
-        p.rect_stroke(frame_icon(pos2(card.left() + 22.0, top), vec2(20.0, 14.0), w, h), 2.0, Stroke::new(1.0, PAL.text_dim), StrokeKind::Inside);
-        p.text(pos2(card.left() + 40.0, top), Align2::LEFT_CENTER, format!("{w} × {h}"), Tokens::semibold(13.0), PAL.text);
-        p.text(pos2(card.left() + 12.0, top + if c { 26.0 } else { 32.0 }), Align2::LEFT_CENTER, format!("{} fps · 48 kHz", fps_label(fps)), Tokens::ui(12.0), PAL.text_dim);
+        p.rect_stroke(frame_icon(pos2(card.left() + 22.0, top), vec2(20.0, 14.0), w, h), 2.0, Stroke::new(1.0, t.text_dim), StrokeKind::Inside);
+        p.text(pos2(card.left() + 40.0, top), Align2::LEFT_CENTER, format!("{w} × {h}"), Tokens::semibold(13.0), t.text);
+        p.text(pos2(card.left() + 12.0, top + if c { 26.0 } else { 32.0 }), Align2::LEFT_CENTER, format!("{} fps · 48 kHz", fps_label(fps)), Tokens::ui(12.0), t.text_dim);
         if resp.clicked() {
             (d.width, d.height, d.fps, d.sample_rate) = (w, h, fps, 48_000);
             d.error.clear();
@@ -242,13 +242,13 @@ fn render_preview(ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
     let pad = if c { 24.0 } else { 36.0 };
     let inner = r.shrink2(vec2(pad, pad * 0.8));
     let mut y = inner.top();
-    y += paragraph(ui, pos2(inner.left(), y), inner.width(), tl!("Set up your next project."), Tokens::semibold(if c { 22.0 } else { 28.0 }), PAL.text);
+    y += paragraph(ui, pos2(inner.left(), y), inner.width(), tl!("Set up your next project."), Tokens::semibold(if c { 22.0 } else { 28.0 }), t.text);
     y += 4.0;
-    y += paragraph(ui, pos2(inner.left(), y), inner.width(), tl!("Pick a format, adjust the settings and create your project."), Tokens::ui(14.0), PAL.text_dim);
+    y += paragraph(ui, pos2(inner.left(), y), inner.width(), tl!("Pick a format, adjust the settings and create your project."), Tokens::ui(14.0), t.text_dim);
     y += if c { 14.0 } else { 22.0 };
-    ui.painter().hline(inner.x_range(), y, Stroke::new(1.0, PAL.border));
+    ui.painter().hline(inner.x_range(), y, Stroke::new(1.0, t.separator));
     y += if c { 12.0 } else { 18.0 };
-    ui.painter().text(pos2(inner.left(), y + 10.0), Align2::LEFT_CENTER, tl!("Preview"), Tokens::semibold(14.0), PAL.text);
+    ui.painter().text(pos2(inner.left(), y + 10.0), Align2::LEFT_CENTER, tl!("Preview"), Tokens::semibold(14.0), t.text);
     y += 30.0;
 
     // The frame, fitted under the width ruler and right of the height ruler, the summary below.
@@ -258,13 +258,13 @@ fn render_preview(ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
         return;
     }
     let frame = frame_icon(space.center(), space.size(), d.width, d.height);
-    ui.painter().rect(frame, 4.0, PAL.card, Stroke::new(1.0, PAL.field_border), StrokeKind::Inside);
-    ui.painter().text(frame.center(), Align2::CENTER_CENTER, aspect(d.width, d.height), Tokens::ui(13.0), PAL.text_faint);
-    let ink = Stroke::new(1.0, PAL.text_dim);
+    ui.painter().rect(frame, 4.0, t.card, Stroke::new(1.0, t.field_border), StrokeKind::Inside);
+    ui.painter().text(frame.center(), Align2::CENTER_CENTER, aspect(d.width, d.height), Tokens::ui(13.0), t.text_faint);
+    let ink = Stroke::new(1.0, t.text_dim);
     let p = ui.painter();
     // width ruler
     let ry = frame.top() - ruler / 2.0;
-    let wl = p.layout_no_wrap(format!("{} px", d.width), Tokens::ui(12.5), PAL.text);
+    let wl = p.layout_no_wrap(format!("{} px", d.width), Tokens::ui(12.5), t.text);
     let gap = wl.size().x / 2.0 + 8.0;
     let cx = frame.center().x;
     for (a, b) in [(frame.left(), cx - gap), (cx + gap, frame.right())] {
@@ -274,10 +274,10 @@ fn render_preview(ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
     }
     p.vline(frame.left(), (ry - 5.0)..=(ry + 5.0), ink);
     p.vline(frame.right(), (ry - 5.0)..=(ry + 5.0), ink);
-    p.galley(pos2(cx - wl.size().x / 2.0, ry - wl.size().y / 2.0), wl, PAL.text);
+    p.galley(pos2(cx - wl.size().x / 2.0, ry - wl.size().y / 2.0), wl, t.text);
     // height ruler, its label turned on its side
     let rx = frame.left() - ruler / 2.0;
-    let hl = p.layout_no_wrap(format!("{} px", d.height), Tokens::ui(12.5), PAL.text);
+    let hl = p.layout_no_wrap(format!("{} px", d.height), Tokens::ui(12.5), t.text);
     let gap = hl.size().x / 2.0 + 8.0;
     let cy = frame.center().y;
     for (a, b) in [(frame.top(), cy - gap), (cy + gap, frame.bottom())] {
@@ -288,8 +288,8 @@ fn render_preview(ui: &egui::Ui, r: Rect, c: bool, d: &Draft) {
     p.hline((rx - 5.0)..=(rx + 5.0), frame.top(), ink);
     p.hline((rx - 5.0)..=(rx + 5.0), frame.bottom(), ink);
     let (hw, hh) = (hl.size().x, hl.size().y);
-    p.add(egui::epaint::TextShape::new(pos2(rx - hh / 2.0, cy + hw / 2.0), hl, PAL.text).with_angle(-std::f32::consts::FRAC_PI_2));
-    p.text(pos2(frame.center().x, frame.bottom() + 18.0), Align2::CENTER_CENTER, summary(d), Tokens::ui(13.0), PAL.text_dim);
+    p.add(egui::epaint::TextShape::new(pos2(rx - hh / 2.0, cy + hw / 2.0), hl, t.text).with_angle(-std::f32::consts::FRAC_PI_2));
+    p.text(pos2(frame.center().x, frame.bottom() + 18.0), Align2::CENTER_CENTER, summary(d), Tokens::ui(13.0), t.text_dim);
 }
 
 /// "16:9", or "2.39:1" when the reduced ratio has no small integer form.
@@ -310,21 +310,21 @@ fn field_style(ui: &mut egui::Ui) {
     s.button_padding = vec2(10.0, 6.0);
     s.item_spacing = vec2(8.0, 6.0);
     let v = ui.visuals_mut();
-    v.override_text_color = Some(PAL.text);
-    v.extreme_bg_color = PAL.field;
-    v.selection.stroke = Stroke::new(1.0, PAL.accent);
-    for (w, border) in [(&mut v.widgets.inactive, PAL.field_border), (&mut v.widgets.hovered, PAL.text_faint), (&mut v.widgets.active, PAL.accent), (&mut v.widgets.open, PAL.accent)] {
-        w.bg_fill = PAL.field;
-        w.weak_bg_fill = PAL.field;
+    v.override_text_color = Some(t.text);
+    v.extreme_bg_color = t.field_bg;
+    v.selection.stroke = Stroke::new(1.0, t.accent);
+    for (w, border) in [(&mut v.widgets.inactive, t.field_border), (&mut v.widgets.hovered, t.text_faint), (&mut v.widgets.active, t.accent), (&mut v.widgets.open, t.accent)] {
+        w.bg_fill = t.field_bg;
+        w.weak_bg_fill = t.field_bg;
         w.bg_stroke = Stroke::new(1.0, border);
         w.corner_radius = 8.0.into();
-        w.fg_stroke.color = PAL.text;
+        w.fg_stroke.color = t.text;
     }
-    v.widgets.noninteractive.bg_stroke = Stroke::new(1.0, PAL.border);
+    v.widgets.noninteractive.bg_stroke = Stroke::new(1.0, t.separator);
 }
 
 fn field_label(ui: &mut egui::Ui, text: &str) {
-    ui.label(egui::RichText::new(text).font(Tokens::ui(12.5)).color(PAL.text_dim));
+    ui.label(egui::RichText::new(text).font(Tokens::ui(12.5)).color(t.text_dim));
 }
 
 /// Name, location, size, rate, pixel aspect and sample rate.
@@ -334,7 +334,7 @@ fn render_settings(app: &mut FilmcraftApp, ui: &mut egui::Ui, r: Rect, c: bool, 
     ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
         field_style(ui);
         let w = inner.width();
-        ui.label(egui::RichText::new(tl!("Project settings")).font(Tokens::semibold(16.0)).color(PAL.text));
+        ui.label(egui::RichText::new(tl!("Project settings")).font(Tokens::semibold(16.0)).color(t.text));
         ui.add_space(if c { 0.0 } else { 6.0 });
         field_label(ui, tl!("Name"));
         let r = ui.add(egui::TextEdit::singleline(&mut d.name).desired_width(w).margin(vec2(10.0, 7.0)));
