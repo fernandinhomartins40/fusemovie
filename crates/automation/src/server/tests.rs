@@ -33,7 +33,7 @@ async fn rendering_at_a_time_does_not_move_the_playhead() {
     for seconds in [5.0, 8.0] {
         let r = m.render_frame(Parameters(RenderParams { seconds: Some(seconds), max_side: Some(64) })).await.unwrap();
         assert_ne!(png(r), at_playhead, "renders the frame at {seconds} s");
-        m.render_preview(Parameters(PreviewParams { seconds: Some(seconds), max_side: Some(64), region: None })).await.unwrap();
+        m.render_preview(Parameters(PreviewParams { seconds: Some(seconds), max_side: Some(64), region: None, item: None })).await.unwrap();
     }
     let after = m.run("sequence.inspect", json!({})).await.unwrap();
     assert_eq!(after["playhead"], before["playhead"]);
@@ -487,7 +487,7 @@ async fn codex_bridge_render_preview_renders_the_document_region() {
         }
     });
     let m = FilmcraftMcp::bridge(&addr).unwrap();
-    let res = m.render_preview(Parameters(PreviewParams { seconds: Some(2.0), max_side: Some(300), region: Some([10.0, 20.0, 30.0, 40.0]) })).await.unwrap();
+    let res = m.render_preview(Parameters(PreviewParams { seconds: Some(2.0), max_side: Some(300), region: Some([10.0, 20.0, 30.0, 40.0]), item: Some(7) })).await.unwrap();
     let v = serde_json::to_value(res).unwrap();
     assert_eq!(v["content"][0]["type"], "image", "{v}");
     let seen = seen.lock().unwrap();
@@ -497,12 +497,38 @@ async fn codex_bridge_render_preview_renders_the_document_region() {
     assert_eq!(req["params"]["region"], json!([10.0, 20.0, 30.0, 40.0]));
     assert_eq!(req["params"]["seconds"], json!(2.0));
     assert_eq!(req["params"]["maxSide"], json!(300));
+    assert_eq!(req["params"]["item"], json!(7), "the media item id reaches the app");
+}
+
+/// Headless `render_preview` with `item` shows the media itself, sized by `max_side`, and refuses
+/// hostile ids and times with an error.
+#[tokio::test(flavor = "multi_thread")]
+async fn codex_headless_render_preview_item_renders_media_and_refuses_hostile_input() {
+    let s = demo();
+    let Some((id, w, h)) = s.project.items.values().find_map(|i| match &i.kind {
+        filmcraft_engine::project::ItemKind::Media(m) => m.info.video.as_ref().map(|v| (i.id.0, v.width, v.height)),
+        _ => None,
+    }) else {
+        panic!("the demo has video media")
+    };
+    let m = FilmcraftMcp::headless(s);
+    let p = |item, seconds| PreviewParams { seconds, max_side: Some(64), region: None, item };
+    let v = serde_json::to_value(m.render_preview(Parameters(p(Some(id), Some(0.5)))).await.unwrap()).unwrap();
+    assert_eq!(v["content"][0]["type"], "image", "{v}");
+    let png = base64_decode(v["content"][0]["data"].as_str().unwrap());
+    let img = image::load_from_memory(&png).unwrap();
+    let k = 64.0 / f64::from(w.max(h));
+    assert!((i64::from(img.width()) - (f64::from(w) * k).round() as i64).abs() <= 1, "{}x{} for {w}x{h}", img.width(), img.height());
+    for (item, seconds) in [(Some(u64::MAX), None), (Some(id), Some(-1.0)), (Some(id), Some(f64::NAN)), (Some(id), Some(1e300)), (Some(id), Some(f64::INFINITY))] {
+        let r = m.render_preview(Parameters(p(item, seconds))).await.unwrap();
+        assert_eq!(r.is_error, Some(true), "{item:?} {seconds:?}");
+    }
 }
 
 #[tokio::test]
 async fn codex_headless_render_preview_refuses_a_region() {
     let m = FilmcraftMcp::headless(demo());
-    let res = m.render_preview(Parameters(PreviewParams { seconds: None, max_side: Some(64), region: Some([0.0, 0.0, 8.0, 8.0]) })).await.unwrap();
+    let res = m.render_preview(Parameters(PreviewParams { seconds: None, max_side: Some(64), region: Some([0.0, 0.0, 8.0, 8.0]), item: None })).await.unwrap();
     assert_eq!(res.is_error, Some(true));
 }
 
