@@ -3690,7 +3690,6 @@
 	{n} clips	{n} clipes
 	Classic Layout	Layout clássico
 	Studio	Studio
-	The Codex assistant will appear here.	O assistente Codex aparecerá aqui.
 studio.mode	Assemble	Montar
 studio.mode	Edit	Cortar
 studio.mode	Color	Cor
@@ -3734,3 +3733,44 @@ studio.rail	Panels	Painéis
 	Pixel Aspect Ratio	Proporção de pixels
 	Sequences use square pixels	As sequências usam pixels quadrados
 	Audio Sample Rate	Taxa de amostragem de áudio
+# Window › Codex
+	Codex	Codex
+	Codex CLI	Codex CLI
+	Add account	Adicionar conta
+	Ask Codex to edit the open sequence: cut, trim, add titles, captions, effects or transitions, or generate an image.	Peça ao Codex para editar a sequência aberta: cortar, aparar, adicionar títulos, legendas, efeitos ou transições, ou gerar uma imagem.
+	Attach files	Anexar arquivos
+	Codex is not available in this version of {app}.	O Codex não está disponível nesta versão do {app}.
+	Connected	Conectado
+	Connecting…	Conectando…
+	Conversations	Conversas
+	Could not import image {name}: {error}	Não foi possível importar a imagem {name}: {error}
+	Disconnected	Desconectado
+	Finished in 1 step.	Concluído em 1 etapa.
+	Finished in {n} steps.	Concluído em {n} etapas.
+	Image {name} imported into the project	Imagem {name} importada para o projeto
+	MCP connected	MCP conectado
+	More	Mais
+	New Chat	Nova conversa
+	No saved conversations yet.	Nenhuma conversa salva ainda.
+	Not signed in	Sem login
+	Now using {name}. This is a new conversation: Codex doesn't remember the earlier messages.	Usando {name} agora. Esta é uma conversa nova: o Codex não lembra as mensagens anteriores.
+	Opening the browser…	Abrindo o navegador…
+	Restart Codex	Reiniciar o Codex
+	Run details	Detalhes da execução
+	Send	Enviar
+	Sign Out	Sair
+	Sign in with ChatGPT	Entrar com o ChatGPT
+	Sign in with your ChatGPT account to use Codex.	Entre com sua conta do ChatGPT para usar o Codex.
+	Start Codex	Iniciar o Codex
+	Switch to {name}	Mudar para {name}
+	This account reached its usage limit. Switch to another account to keep going.	Esta conta atingiu o limite de uso. Mude para outra conta para continuar.
+	What do you want to edit or create?	O que você quer editar ou criar?
+	Codex stopped.	O Codex parou.
+	Generating image…	Gerando imagem…
+	Searching the web…	Pesquisando na web…
+	Sign in to ChatGPT in your browser…	Entre no ChatGPT no seu navegador…
+	Codex CLI not found: install it (npm install -g @openai/codex) or set FILMCRAFT_CODEX	Codex CLI não encontrado: instale-o (npm install -g @openai/codex) ou defina FILMCRAFT_CODEX
+	filmcraft-cli was not found next to the app	O filmcraft-cli não foi encontrado ao lado do aplicativo
+	This account is already added. To add another, sign out of it in your browser and sign in again.	Esta conta já foi adicionada. Para adicionar outra, saia dela no navegador e entre de novo.
+	Image generation failed.	A geração de imagem falhou.
+	Image generation failed: the usage limit was reached.	A geração de imagem falhou: o limite de uso foi atingido.

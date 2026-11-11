@@ -89,6 +89,20 @@ pub struct RenderParams {
 }
 
 #[derive(Debug, Default, Deserialize, JsonSchema)]
+pub struct PreviewParams {
+    /// Timeline time in seconds (default: the playhead).
+    #[serde(default)]
+    pub seconds: Option<f64>,
+    /// Longest side of the PNG (default 960).
+    #[serde(default)]
+    pub max_side: Option<u32>,
+    /// Only this part of the frame, `[x, y, width, height]` in sequence pixels, rendered as sharp
+    /// as `max_side` allows (to look at details without changing the project).
+    #[serde(default)]
+    pub region: Option<[f64; 4]>,
+}
+
+#[derive(Debug, Default, Deserialize, JsonSchema)]
 pub struct ShotParams {
     /// Panel to crop to (e.g. `Timeline`, `Program`); omit for the whole window.
     #[serde(default)]
@@ -405,11 +419,30 @@ impl FilmcraftMcp {
 
     #[tool(
         title = "Render a preview",
-        description = "The active sequence's frame at `seconds` (default: the playhead) as PNG, same as render_frame (bridge mode: Program monitor screenshot).",
+        description = "The active sequence's frame at `seconds` (default: the playhead) rendered by the engine as PNG, or only a `region` [x, y, width, height] of it in sequence pixels, to see details. Read-only: the playhead does not move.",
         annotations(read_only_hint = true, destructive_hint = false, idempotent_hint = true, open_world_hint = false)
     )]
-    async fn render_preview(&self, p: Parameters<RenderParams>) -> Result<CallToolResult, McpError> {
-        self.render_frame(p).await
+    async fn render_preview(&self, Parameters(p): Parameters<PreviewParams>) -> Result<CallToolResult, McpError> {
+        let Backend::Bridge(b) = &*self.backend else {
+            if p.region.is_some() {
+                return Ok(fail("`region` is only supported in bridge mode"));
+            }
+            return self.render_frame(Parameters(RenderParams { seconds: p.seconds, max_side: p.max_side })).await;
+        };
+        // The app renders the sequence itself (not a window screenshot) into a fresh owner-only folder.
+        let dir = match tempfile::tempdir() {
+            Ok(dir) => dir,
+            Err(e) => return Ok(fail(format!("render_preview: {e}"))),
+        };
+        let path = dir.path().join("preview.png");
+        let params = json!({"path": path.to_string_lossy(), "seconds": p.seconds, "maxSide": p.max_side.unwrap_or(960), "region": p.region});
+        if let Err(e) = b.call("ui.renderPreview", params).await {
+            return Ok(fail(e));
+        }
+        Ok(match tokio::fs::read(&path).await {
+            Ok(bytes) => png_result(&bytes, "rendered frame of the active sequence"),
+            Err(e) => fail(format!("render_preview: {e}")),
+        })
     }
 
     #[tool(

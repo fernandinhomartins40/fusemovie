@@ -19,6 +19,7 @@
 //! - `ui.timeline.locate {clip, edge?}`: screen point of a clip body/edge (for drags)
 //! - `ui.playback {action: play|stop|toggle, speed?}`
 //! - `ui.screenshot {path?, panel?}`: PNG of the window (or one panel)
+//! - `ui.renderPreview {path, seconds?, maxSide?, region?}`: PNG of the sequence frame from the engine
 //! - `ui.resize {width, height}` / `ui.focus` / `app.quit`
 
 use std::sync::mpsc::Sender;
@@ -570,6 +571,10 @@ pub fn handle(app: &mut FilmcraftApp, ctx: &egui::Context, req: &ControlRequest)
             app.raise_for_control(ctx);
             Outcome::Screenshot { path: s("path").map(str::to_string), crop }
         }
+        "ui.renderPreview" => match render_preview(app, p) {
+            Ok(v) => ok(v),
+            Err(e) => err(e),
+        },
         "ui.resize" => {
             let w = p.get("width").and_then(Value::as_f64).unwrap_or(1600.0) as f32;
             let h = p.get("height").and_then(Value::as_f64).unwrap_or(1000.0) as f32;
@@ -741,6 +746,71 @@ pub fn base64(data: &[u8]) -> String {
     out
 }
 
+/// The render scale and the part of the frame (fractions `[x, y, w, h]`) a preview of `region`
+/// (sequence pixels `[x, y, w, h]`, default the whole frame) needs, so the region's longest side
+/// is at most `max` pixels (0: full size) and never above the sequence's own resolution.
+fn preview_area(frame: (u32, u32), region: Option<&Value>, max: u32) -> Result<(f32, [f64; 4]), String> {
+    let (fw, fh) = (f64::from(frame.0), f64::from(frame.1));
+    if fw < 1.0 || fh < 1.0 {
+        return Err("the sequence has no frame size".into());
+    }
+    let [x, y, w, h] = match region.filter(|r| !r.is_null()) {
+        None => [0.0, 0.0, fw, fh],
+        Some(r) => {
+            let n: Vec<f64> = r.as_array().map(|a| a.iter().filter_map(Value::as_f64).collect()).unwrap_or_default();
+            let &[x, y, w, h] = &n[..] else { return Err("`region` must be [x, y, width, height] in sequence pixels".into()) };
+            if !(x.is_finite() && y.is_finite() && w.is_finite() && h.is_finite()) {
+                return Err("`region` must be finite numbers".into());
+            }
+            // Clamp to the frame; what is left must be at least a pixel.
+            let (x0, y0) = (x.clamp(0.0, fw), y.clamp(0.0, fh));
+            let (x1, y1) = ((x + w).clamp(0.0, fw), (y + h).clamp(0.0, fh));
+            if x1 - x0 < 1.0 || y1 - y0 < 1.0 {
+                return Err(format!("`region` lies outside the {}x{} frame", frame.0, frame.1));
+            }
+            [x0, y0, x1 - x0, y1 - y0]
+        }
+    };
+    let long = w.max(h);
+    let scale = if max == 0 { 1.0 } else { (f64::from(max) / long).min(1.0) };
+    Ok((scale as f32, [x / fw, y / fh, w / fw, h / fh]))
+}
+
+/// `ui.renderPreview {path, seconds?, maxSide?, region?}`: the active sequence's frame (at
+/// `seconds`, default the playhead) rendered by the engine (not a window screenshot, so no UI on
+/// top and the playhead stays put), cropped to `region`, written as a PNG to `path`.
+fn render_preview(app: &FilmcraftApp, p: &Value) -> Result<Value, String> {
+    let path = p.get("path").and_then(Value::as_str).ok_or("need `path`")?;
+    let max = match p.get("maxSide") {
+        None | Some(Value::Null) => 960,
+        Some(v) => v.as_u64().and_then(|m| u32::try_from(m).ok()).filter(|m| *m <= 8192).ok_or("`maxSide` must be an integer up to 8192")?,
+    };
+    let seq = app.session.active_sequence().ok_or("no sequence is open")?;
+    let (scale, [fx, fy, fw, fh]) = preview_area((seq.settings.width, seq.settings.height), p.get("region"), max)?;
+    let t = match p.get("seconds").and_then(Value::as_f64) {
+        Some(s) if s.is_finite() => filmcraft_time::Tick::from_seconds_f64(s),
+        Some(_) => return Err("`seconds` must be finite".into()),
+        None => app.session.playhead(),
+    };
+    let img = app.session.try_render_program_at(scale, t).map_err(|e| e.to_string())?;
+    if img.w == 0 || img.h == 0 {
+        return Err("the sequence rendered an empty frame".into());
+    }
+    let rgba = img.over_black_rgba8();
+    let (iw, ih) = (img.w as f64, img.h as f64);
+    let x0 = ((fx * iw).floor() as usize).min(img.w.saturating_sub(1));
+    let y0 = ((fy * ih).floor() as usize).min(img.h.saturating_sub(1));
+    let cw = ((fw * iw).round() as usize).clamp(1, img.w - x0);
+    let ch = ((fh * ih).round() as usize).clamp(1, img.h - y0);
+    let mut out = Vec::with_capacity(cw * ch * 4);
+    for row in rgba.chunks_exact(img.w * 4).skip(y0).take(ch) {
+        out.extend_from_slice(row.get(x0 * 4..(x0 + cw) * 4).ok_or("preview crop outside the render")?);
+    }
+    let png = encode_png(&out, cw as u32, ch as u32)?;
+    std::fs::write(path, png).map_err(|e| e.to_string())?;
+    Ok(json!({"path": path, "width": cw, "height": ch}))
+}
+
 /// Minimal PNG encoder (stored deflate blocks, no compression dependency).
 pub fn encode_png(rgba: &[u8], w: u32, h: u32) -> Result<Vec<u8>, String> {
     fn chunk(out: &mut Vec<u8>, ty: &[u8], data: &[u8]) {
@@ -795,6 +865,46 @@ pub fn encode_png(rgba: &[u8], w: u32, h: u32) -> Result<Vec<u8>, String> {
     chunk(&mut out, b"IDAT", &z);
     chunk(&mut out, b"IEND", &[]);
     Ok(out)
+}
+
+#[cfg(test)]
+mod codex_render_preview_tests {
+    use super::*;
+
+    #[test]
+    fn codex_render_preview_area_zooms_into_a_region() {
+        let (scale, area) = preview_area((1920, 1080), None, 960).unwrap();
+        assert_eq!((scale, area), (0.5, [0.0, 0.0, 1.0, 1.0]));
+        // A 480-pixel detail fills the preview at full resolution, never above it.
+        let (scale, area) = preview_area((1920, 1080), Some(&json!([960, 540, 480, 270])), 960).unwrap();
+        assert_eq!((scale, area), (1.0, [0.5, 0.5, 0.25, 0.25]));
+        // Clamped to the frame.
+        let (_, area) = preview_area((100, 100), Some(&json!([-50, 50, 100, 100])), 0).unwrap();
+        assert_eq!(area, [0.0, 0.5, 0.5, 0.5]);
+        for bad in [json!([0, 0, 1]), json!("x"), json!([200, 200, 10, 10]), json!([0, 0, 0.5, 10])] {
+            assert!(preview_area((100, 100), Some(&bad), 0).is_err(), "{bad}");
+        }
+        assert!(preview_area((0, 0), None, 0).is_err());
+    }
+
+    #[test]
+    fn codex_render_preview_renders_the_sequence_cropped() {
+        let mut app = FilmcraftApp::new(filmcraft_engine::Session::default());
+        let _ = app.session.execute("file.openDemoProject", json!({}));
+        let Some((w, h)) = app.session.active_sequence().map(|q| (q.settings.width, q.settings.height)) else { panic!("the demo opens a sequence") };
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("p.png");
+        let path_s = path.to_string_lossy().to_string();
+        let (req, _) = ControlRequest::new("ui.renderPreview", json!({"path": path_s, "maxSide": 0, "region": [0, 0, w / 4, h / 4]}));
+        let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), &req) else { panic!("renders at once") };
+        assert_eq!(reply["ok"], true, "{reply}");
+        assert_eq!(reply["result"]["width"], w / 4);
+        assert_eq!(reply["result"]["height"], h / 4);
+        assert!(std::fs::read(&path).unwrap().starts_with(&[0x89, b'P', b'N', b'G']));
+        let (req, _) = ControlRequest::new("ui.renderPreview", json!({"path": path_s, "region": [0, 0]}));
+        let Outcome::Done(reply) = handle(&mut app, &egui::Context::default(), &req) else { panic!("answers at once") };
+        assert_eq!(reply["ok"], false);
+    }
 }
 
 #[cfg(test)]

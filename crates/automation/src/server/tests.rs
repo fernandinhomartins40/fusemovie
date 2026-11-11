@@ -33,7 +33,7 @@ async fn rendering_at_a_time_does_not_move_the_playhead() {
     for seconds in [5.0, 8.0] {
         let r = m.render_frame(Parameters(RenderParams { seconds: Some(seconds), max_side: Some(64) })).await.unwrap();
         assert_ne!(png(r), at_playhead, "renders the frame at {seconds} s");
-        m.render_preview(Parameters(RenderParams { seconds: Some(seconds), max_side: Some(64) })).await.unwrap();
+        m.render_preview(Parameters(PreviewParams { seconds: Some(seconds), max_side: Some(64), region: None })).await.unwrap();
     }
     let after = m.run("sequence.inspect", json!({})).await.unwrap();
     assert_eq!(after["playhead"], before["playhead"]);
@@ -456,6 +456,54 @@ async fn parallel_bridge_render_frames_each_return_their_own_frame() {
         assert_eq!(px[0], want, "frame at {want} s came from another call's playhead");
     }
     assert_eq!(playhead.load(std::sync::atomic::Ordering::SeqCst), 200, "the playhead must end where it started");
+}
+
+/// Bridge `render_preview` asks the app to render the sequence itself (`ui.renderPreview`, with the
+/// region and time), not for a window screenshot, and never moves the playhead.
+#[tokio::test]
+async fn codex_bridge_render_preview_renders_the_document_region() {
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap().to_string();
+    let seen = Arc::new(std::sync::Mutex::new(Vec::<Value>::new()));
+    let log = seen.clone();
+    tokio::spawn(async move {
+        while let Ok((s, _)) = listener.accept().await {
+            let log = log.clone();
+            tokio::spawn(async move {
+                let (r, mut w) = s.into_split();
+                let mut lines = tokio::io::BufReader::new(r).lines();
+                while let Ok(Some(line)) = lines.next_line().await {
+                    let req: Value = serde_json::from_str(&line).unwrap();
+                    if req["method"] == "ui.renderPreview" {
+                        image::RgbaImage::from_pixel(2, 1, image::Rgba([9, 0, 0, 255])).save(req["params"]["path"].as_str().unwrap()).unwrap();
+                    }
+                    log.lock().unwrap().push(req.clone());
+                    let line = format!("{}
+", json!({"id": req["id"], "ok": true, "result": null}));
+                    w.write_all(line.as_bytes()).await.unwrap();
+                }
+            });
+        }
+    });
+    let m = FilmcraftMcp::bridge(&addr).unwrap();
+    let res = m.render_preview(Parameters(PreviewParams { seconds: Some(2.0), max_side: Some(300), region: Some([10.0, 20.0, 30.0, 40.0]) })).await.unwrap();
+    let v = serde_json::to_value(res).unwrap();
+    assert_eq!(v["content"][0]["type"], "image", "{v}");
+    let seen = seen.lock().unwrap();
+    assert_eq!(seen.len(), 1, "one render, no playhead moves or screenshots: {seen:?}");
+    let req = &seen[0];
+    assert_eq!(req["method"], "ui.renderPreview");
+    assert_eq!(req["params"]["region"], json!([10.0, 20.0, 30.0, 40.0]));
+    assert_eq!(req["params"]["seconds"], json!(2.0));
+    assert_eq!(req["params"]["maxSide"], json!(300));
+}
+
+#[tokio::test]
+async fn codex_headless_render_preview_refuses_a_region() {
+    let m = FilmcraftMcp::headless(demo());
+    let res = m.render_preview(Parameters(PreviewParams { seconds: None, max_side: Some(64), region: Some([0.0, 0.0, 8.0, 8.0]) })).await.unwrap();
+    assert_eq!(res.is_error, Some(true));
 }
 
 /// A client that floods malformed lines and never reads its output stalls its own input: parse

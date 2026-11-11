@@ -79,8 +79,6 @@ pub struct StudioState {
     pub bottom: bottom::Tab,
     /// The bottom strip's height as a share of the window's.
     pub strip_frac: f32,
-    /// The Codex column is open (the wand button).
-    pub codex_open: bool,
     /// The Codex column's width when the user dragged it; `None` = the default for the size.
     pub codex_w: Option<f32>,
     /// The tool list under the tool button is open.
@@ -97,7 +95,6 @@ impl Default for StudioState {
             pick: None,
             bottom: bottom::Tab::default(),
             strip_frac: style::STRIP_FRAC,
-            codex_open: false,
             codex_w: None,
             tools_open: false,
             search: Default::default(),
@@ -152,7 +149,7 @@ pub fn frame(app: &mut FilmcraftApp, ui: &mut egui::Ui, full: Rect) {
     let t = app.tokens;
     ui.painter().rect_filled(full, 0.0, t.canvas);
     let compact = style::compact(&ctx);
-    let codex = app.studio.codex_open.then(|| app.studio.codex_w.unwrap_or(style::Sizes::new(compact).codex));
+    let codex = crate::codex_panel::is_open(app).then(|| app.studio.codex_w.unwrap_or(style::Sizes::new(compact).codex));
     let r = regions(full, compact, codex, app.studio.strip_frac);
     if home_wanted(app) {
         top_bar::show(app, ui, r.top);
@@ -263,12 +260,8 @@ fn codex_column(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
 }
 
 /// The Codex chat's place in the shell.
-// integrator: codex_panel::show_in — replace the placeholder below with the Codex panel.
 pub fn codex_slot(app: &mut FilmcraftApp, ui: &mut egui::Ui) {
-    let t = app.tokens;
-    ui.label(egui::RichText::new("Codex").font(crate::theme::Tokens::semibold(18.0)).color(t.text));
-    ui.add_space(8.0);
-    ui.label(egui::RichText::new(tl!("The Codex assistant will appear here.")).color(t.text_dim));
+    crate::codex_panel::show_in(app, ui);
 }
 
 /// Run command `id` the way a menu click does; an error goes to the status line.

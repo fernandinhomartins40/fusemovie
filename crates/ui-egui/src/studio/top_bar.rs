@@ -80,8 +80,8 @@ pub fn show(app: &mut FilmcraftApp, ui: &mut egui::Ui, rect: Rect) {
     }
     rx = export.left() - 10.0;
     let wand = Rect::from_min_max(pos2(rx - 34.0, cy - 17.0), pos2(rx, cy + 17.0));
-    if style::icon_button(ui, wand, egui::Id::unique("studio-codex"), Icon::Sparkle, app.studio.codex_open, &t, "Codex").clicked() {
-        app.studio.codex_open = !app.studio.codex_open;
+    if style::icon_button(ui, wand, egui::Id::unique("studio-codex"), Icon::Sparkle, crate::codex_panel::is_open(app), &t, "Codex").clicked() {
+        crate::codex_panel::toggle(app);
     }
     app.auto.add("studio.codex", wand, "Codex");
     rx = wand.left() - 14.0;

@@ -140,11 +140,11 @@ fn studio_compact_sizes_and_the_codex_column() {
 fn studio_codex_wand_opens_the_column() {
     let mut h = harness(1440.0, 900.0);
     click_id(&mut h, "studio.codex");
-    assert!(h.state().studio.codex_open);
+    assert!(h.state().codex.open);
     let strip = rect_of(&h, "panel.Timeline").unwrap();
     assert!(strip.right() <= 1440.0 - 80.0 - 430.0 + 1.0, "the Timeline stops at the Codex column");
     click_id(&mut h, "studio.codex");
-    assert!(!h.state().studio.codex_open);
+    assert!(!h.state().codex.open);
 }
 
 #[test]
@@ -229,7 +229,7 @@ fn studio_snapshots() {
         for (codex, mode) in Mode::ALL.into_iter().map(|m| (false, m)).chain([(true, Mode::Assemble)]) {
             let mut a = app();
             a.studio.mode = mode;
-            a.studio.codex_open = codex;
+            a.codex.open = codex;
             let mut h = harness_with(a, w, hh);
             h.run_steps(20);
             let image = h.render().unwrap();
