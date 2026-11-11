@@ -43,6 +43,7 @@ impl FilmcraftApp {
             scrub: Default::default(),
             hooks: HostHooks::default(),
             codex: Default::default(),
+            create_ai: Default::default(),
             // Unsaved changes left by a session that died are offered first thing.
             dialog: recovery.then_some(Dialog::Recovery),
             file_dialogs: Default::default(),
@@ -393,6 +394,8 @@ impl FilmcraftApp {
             self.apply_prefs(&ctx);
             self.sync_timeline_view();
             panels::metadata::follow_selection(self);
+            // before any shortcut or drop: Create with AI keeps them from the editor it locks
+            crate::create_ai::filter_keys(self, &ctx);
             self.handle_drops(&ctx);
             self.begin_press(&ctx);
             self.latch_escape_cancel(&ctx);

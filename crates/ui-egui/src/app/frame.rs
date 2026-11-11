@@ -64,6 +64,8 @@ impl FilmcraftApp {
         } else {
             self.classic_body(ui, full);
         }
+        // Create with AI's dialog, and during a run the lock, the cursor and the progress bar
+        crate::create_ai::show(self, &ctx);
         // the Timeline has had its chance to place a file drop this frame; anything left stays a bin import
         self.pending_timeline_drop = None;
         panels::dialogs::show(self, &ctx);

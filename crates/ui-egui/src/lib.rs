@@ -36,6 +36,7 @@ pub mod capture;
 mod cjk;
 pub mod codex_panel;
 pub mod control;
+pub mod create_ai;
 pub mod crash;
 pub mod credits;
 pub mod dock;
@@ -202,6 +203,8 @@ pub struct FilmcraftApp {
     pub hooks: HostHooks,
     /// Window › Codex: the chat with Codex ([`codex_panel`]).
     pub codex: codex_panel::CodexPanel,
+    /// File › Create with AI ([`create_ai`]).
+    pub create_ai: create_ai::CreateAi,
     pub dialog: Option<Dialog>,
     pub file_dialogs: panels::file_dialogs::FileDialogState,
     /// The native file dialog the host is showing ([`Self::pick`]).

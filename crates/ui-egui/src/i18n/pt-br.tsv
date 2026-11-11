@@ -3774,3 +3774,46 @@ studio.rail	Panels	Painéis
 	This account is already added. To add another, sign out of it in your browser and sign in again.	Esta conta já foi adicionada. Para adicionar outra, saia dela no navegador e entre de novo.
 	Image generation failed.	A geração de imagem falhou.
 	Image generation failed: the usage limit was reached.	A geração de imagem falhou: o limite de uso foi atingido.
+	{n} min	{n} min
+	1 clip	1 clipe
+	Add the clips to edit first.	Adicione primeiro os clipes a editar.
+	Adjusting	Ajustando
+	Adjusting the audio	Ajustando o áudio
+	Adjusting the color	Ajustando a cor
+	Assembling a first cut from {n} clips	Montando um primeiro corte com {n} clipes
+	Briefing	Briefing
+	Choose a folder	Escolher uma pasta
+	Choose clips	Escolher clipes
+	Choose…	Escolher…
+	Create a video with AI	Criar um vídeo com IA
+	Cutting	Cortando
+	Downloading the speech model	Baixando o modelo de fala
+	Drag your clips or a folder here	Arraste seus clipes ou uma pasta para cá
+	Getting started	Começando
+	Give Codex your clips and a briefing, and it assembles a first cut you can keep editing: cuts, titles, captions, music and color.	Dê ao Codex seus clipes e um briefing, e ele monta um primeiro corte que você continua editando: cortes, títulos, legendas, música e cor.
+	Importing	Importando
+	Keep	Manter
+	Music (optional)	Trilha (opcional)
+	No video, audio or image files there.	Não há arquivos de vídeo, áudio ou imagem ali.
+	or click to choose files	ou clique para escolher arquivos
+	Placing a clip	Colocando um clipe
+	Reference video (optional)	Vídeo de referência (opcional)
+	Save Project…	Salvar projeto…
+	Step {n} of {total}	Etapa {n} de {total}
+	Stopped. Keep what was done?	Parado. Manter o que foi feito?
+	Stopping…	Parando…
+	This can take over an hour and use a lot of your plan. The editor stays locked until it finishes, and you can stop whenever you want.	Isso pode levar mais de uma hora e consumir boa parte do seu plano. O editor fica travado até terminar, e você pode parar quando quiser.
+	Transition	Transição
+	Try again	Tentar de novo
+	Usage limit reached: switch accounts on the panel to continue	Limite de uso atingido: troque de conta no painel para continuar
+	Waiting for Codex: sign in on the panel if it asks	Aguardando o Codex: entre na conta pelo painel se ele pedir
+	What the video is about, who it is for, the order of the scenes, the length, the titles and names to show…	Sobre o que é o vídeo, para quem, a ordem das cenas, a duração, os títulos e nomes a mostrar…
+	Write the briefing: what the video should be.	Escreva o briefing: como o vídeo deve ser.
+	Writing the title	Escrevendo o título
+	Your first cut is ready	Seu primeiro corte está pronto
+	Looking at the clips	Analisando os clipes
+	Transcribing the speech	Transcrevendo a fala
+	Assembling the cut	Montando o corte
+	Captions and titles	Legendas e títulos
+	Music and color	Música e cor
+	Checking the result	Conferindo o resultado

@@ -525,6 +525,8 @@ enum Act {
     Detach(String),
     /// Move to this account (or [`NEW_ACCOUNT`]), which starts a new conversation.
     SwitchAccount(String),
+    /// File › Create with AI.
+    CreateAi,
 }
 
 fn run(app: &mut FilmcraftApp, acts: Vec<Act>) {
@@ -585,6 +587,7 @@ fn run(app: &mut FilmcraftApp, acts: Vec<Act>) {
                 start_on(app, None);
             }
             Act::Close => app.codex.open = false,
+            Act::CreateAi => crate::create_ai::open(app),
         }
     }
 }
@@ -702,6 +705,13 @@ fn conversation(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
         sign_in_card(ui, t, p.signing_in, acts);
     } else if p.entries.is_empty() {
         ui.add(egui::Label::new(RichText::new(tl!("Ask Codex to edit the open sequence: cut, trim, add titles, captions, effects or transitions, or generate an image.")).color(t.text_faint)).wrap());
+        // The feature people come to the chat for, in amber.
+        if p.link.is_some() {
+            let chip = egui::Button::new(RichText::new(tl!("Create a video with AI")).color(t.accent)).fill(t.card).stroke(Stroke::new(1.0, t.accent)).corner_radius(10.0).min_size(vec2(0.0, 30.0));
+            if ui.add(chip).on_hover_text(tl!("Create with AI")).clicked() {
+                acts.push(Act::CreateAi);
+            }
+        }
     }
     let last = p.entries.len().saturating_sub(1);
     for (i, entry) in p.entries.iter().enumerate() {

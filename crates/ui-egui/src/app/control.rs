@@ -35,6 +35,14 @@ impl FilmcraftApp {
                 ctx.send_viewport_cmd(egui::ViewportCommand::RequestPaintWhileHidden);
                 continue;
             }
+            // Create with AI paces Codex's edits, so each can be seen; the rest wait in order, and
+            // their deadline restarts (a held request isn't a late one).
+            if let Some(wait) = crate::create_ai::hold(self, now) {
+                self.deferred.push((req, now + 3.0));
+                ctx.request_repaint_after(std::time::Duration::from_secs_f64(wait));
+                continue;
+            }
+            crate::create_ai::observe(self, ctx, &req.method, &req.params);
             let reply = req.reply.clone();
             match control::handle(self, ctx, &req) {
                 control::Outcome::Done(v) => {
