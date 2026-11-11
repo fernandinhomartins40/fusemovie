@@ -938,7 +938,7 @@ fn drop_import_to_timeline_is_in_the_settings_registry() {
     assert_eq!(settings::field("timeline.dropImportToTimeline").map(|f| f.key), Some("timeline.dropImportToTimeline"));
 }
 
-/// New users keep the dark Darkest theme (following the system is opt-in); a file saved before
+/// New users get the dark Studio theme (following the system is opt-in); a file saved before
 /// appearance modes keeps showing its Color Theme as a fixed Dark or Light mode.
 #[test]
 fn appearance_defaults_and_legacy_theme_migrate() {
