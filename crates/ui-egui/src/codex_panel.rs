@@ -173,6 +173,55 @@ impl CodexPanel {
         self.busy
     }
 
+    /// Use this link (tests' fake backends, in other modules).
+    #[cfg(test)]
+    pub(crate) fn connect(&mut self, link: CodexLink) {
+        self.link = Some(link);
+    }
+
+    pub(crate) fn is_signed_in(&self) -> bool {
+        matches!(self.account, Some(Some(_)))
+    }
+
+    pub(crate) fn limit_reached(&self) -> bool {
+        self.limit
+    }
+
+    pub(crate) fn clear_limit(&mut self) {
+        self.limit = false;
+    }
+
+    pub(crate) fn has_models(&self) -> bool {
+        !self.models.is_empty()
+    }
+
+    pub(crate) fn has_model(&self, id: &str) -> bool {
+        self.models.iter().any(|m| m.id == id)
+    }
+
+    /// Where the open chat was last drawn.
+    pub(crate) fn dock(&self) -> Option<Rect> {
+        if self.open { self.rect } else { None }
+    }
+
+    /// Interrupt the running turn.
+    pub(crate) fn stop_turn(&mut self) {
+        self.request(CodexRequest::Stop);
+    }
+
+    /// Use `wanted` from the next message on; returns the model it replaced, if it changed.
+    pub(crate) fn switch_model(&mut self, wanted: Option<String>) -> Option<String> {
+        let wanted = wanted.filter(|w| self.model.as_ref() != Some(w))?;
+        let previous = self.model.replace(wanted.clone());
+        self.request(CodexRequest::SetModel(wanted));
+        previous
+    }
+
+    /// The assistant's messages, oldest first.
+    pub(crate) fn assistant_texts(&self) -> impl DoubleEndedIterator<Item = &str> {
+        self.entries.iter().filter_map(|e| if let Entry::Assistant { text, .. } = e { Some(text.as_str()) } else { None })
+    }
+
     /// Apply one backend event; returns an image to import.
     fn apply(&mut self, event: CodexEvent) -> Option<PathBuf> {
         match event {
@@ -328,6 +377,26 @@ pub fn is_reference_image(path: &str) -> bool {
     std::path::Path::new(path).extension().and_then(|e| e.to_str()).is_some_and(|e| ["png", "jpg", "jpeg", "webp", "gif"].iter().any(|i| e.eq_ignore_ascii_case(i)))
 }
 
+/// Stage tags Create with AI asks for go up to this.
+const MAX_STAGE: usize = 6;
+
+/// The `n` of a message that starts with a `[[n]]` stage tag (Create with AI), 1-based.
+pub(crate) fn stage_tag(text: &str) -> Option<usize> {
+    let rest = text.trim_start().strip_prefix("[[")?;
+    let (n, _) = rest.split_once("]]")?;
+    n.trim().parse::<usize>().ok().filter(|n| (1..=MAX_STAGE).contains(n))
+}
+
+/// A message without its stage tag, for showing.
+pub(crate) fn strip_tag(text: &str) -> &str {
+    if stage_tag(text).is_some()
+        && let Some((_, rest)) = text.split_once("]]")
+    {
+        return rest.trim_start();
+    }
+    text
+}
+
 /// A message as the user wrote it, a long one cut short.
 fn shown_prompt(text: &str) -> String {
     const MAX: usize = 300;
@@ -394,6 +463,37 @@ pub fn toggle(app: &mut FilmcraftApp) {
     if app.codex.open && app.codex.link.is_none() && app.codex.entries.is_empty() {
         start_on(app, None);
     }
+}
+
+/// The newest error in the chat.
+pub(crate) fn last_error(app: &FilmcraftApp) -> Option<String> {
+    app.codex.entries.iter().rev().find_map(|e| if let Entry::Error(e) = e { Some(e.clone()) } else { None })
+}
+
+/// The error of the turn that just ended, if it had one.
+pub(crate) fn last_turn_error(app: &FilmcraftApp) -> Option<String> {
+    let turn = app.codex.entries.get(app.codex.turn_start..)?;
+    turn.iter().rev().find_map(|e| if let Entry::Error(e) = e { Some(e.clone()) } else { None })
+}
+
+/// A fresh conversation: Codex and the chat both forget.
+pub(crate) fn new_chat(app: &mut FilmcraftApp) {
+    run(app, vec![Act::Request(CodexRequest::NewChat)]);
+}
+
+/// Send `prompt` with `files`, showing `shown` in the chat instead of the prompt.
+pub(crate) fn send_as(app: &mut FilmcraftApp, shown: String, prompt: String, files: Vec<String>) {
+    let p = &mut app.codex;
+    p.turn_start = p.entries.len();
+    p.entries.push(Entry::User(shown));
+    p.busy = true;
+    p.limit = false;
+    p.request(CodexRequest::Send { text: prompt, files });
+}
+
+/// Start the backend if it isn't running.
+pub(crate) fn ensure_started(app: &mut FilmcraftApp) {
+    start_on(app, None);
 }
 
 /// Start the backend on an account, if it isn't running.
@@ -613,7 +713,7 @@ fn conversation(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
                 });
             }
             Entry::Assistant { text, .. } => {
-                ui.add(egui::Label::new(RichText::new(text).color(t.text)).wrap());
+                ui.add(egui::Label::new(RichText::new(strip_tag(text)).color(t.text)).wrap());
             }
             Entry::Steps(lines) => {
                 let running = p.busy && i == last;
@@ -781,10 +881,77 @@ fn model_menu(ui: &mut Ui, t: &Tokens, p: &CodexPanel, acts: &mut Vec<Act>) {
     });
 }
 
+/// A menu of Codex's models, each with what it is for, showing `current`; returns the one picked.
+pub(crate) fn model_picker(ui: &mut Ui, t: &Tokens, p: &CodexPanel, current: Option<&str>) -> Option<String> {
+    let current = current.unwrap_or_default();
+    let name = p.models.iter().find(|m| m.id == current).map_or(current, |m| m.name.as_str());
+    let resp = ui.button(name).on_hover_text(tl!("Model"));
+    let mut picked = None;
+    egui::Popup::menu(&resp).show(|ui| {
+        ui.set_max_width(300.0);
+        for m in &p.models {
+            if ui.selectable_label(m.id == current, &m.name).clicked() && m.id != current {
+                picked = Some(m.id.clone());
+            }
+            ui.add(egui::Label::new(RichText::new(&m.description).small().color(t.text_dim)).wrap());
+            ui.add_space(4.0);
+        }
+    });
+    picked
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use egui_kittest::kittest::Queryable;
+
+    #[test]
+    fn codex_stage_tags_are_read_and_hidden() {
+        assert_eq!(stage_tag("[[2]] Cutting"), Some(2));
+        assert_eq!(stage_tag("  [[6]]"), Some(6));
+        assert_eq!(stage_tag("[[0]] no"), None);
+        assert_eq!(stage_tag("[[7]] no"), None);
+        assert_eq!(stage_tag("[[x]] no"), None);
+        assert_eq!(stage_tag("plain"), None);
+        assert_eq!(strip_tag("[[3]] Assembling"), "Assembling");
+        assert_eq!(strip_tag("[[9]] kept"), "[[9]] kept");
+        assert_eq!(strip_tag("plain [[2]] text"), "plain [[2]] text");
+    }
+
+    /// The hooks Create with AI drives the chat with.
+    #[test]
+    fn codex_hooks_send_as_switch_model_and_report_errors() {
+        let (link, requests, events) = link();
+        let mut app = app();
+        app.codex.connect(link);
+        assert!(!app.codex.is_signed_in());
+        events.send(CodexEvent::Account(Some("me@example.com".into()))).unwrap();
+        let model = |id: &str| CodexModel { id: id.into(), name: id.into(), description: String::new() };
+        events.send(CodexEvent::Models { models: vec![model("a"), model("b")], current: Some("a".into()) }).unwrap();
+        poll(&mut app);
+        assert!(app.codex.is_signed_in() && app.codex.has_models() && app.codex.has_model("b") && !app.codex.has_model("c"));
+        assert_eq!(app.codex.switch_model(Some("a".into())), None, "already in use: nothing asked");
+        assert_eq!(app.codex.switch_model(Some("b".into())), Some("a".into()));
+        assert_eq!(requests.try_recv().ok(), Some(CodexRequest::SetModel("b".into())));
+        send_as(&mut app, "Shown".into(), "Sent".into(), vec!["C:/clips/a.mp4".into()]);
+        assert_eq!(requests.try_recv().ok(), Some(CodexRequest::Send { text: "Sent".into(), files: vec!["C:/clips/a.mp4".into()] }));
+        assert!(matches!(app.codex.entries.last(), Some(Entry::User(s)) if s == "Shown"));
+        assert!(app.codex.is_busy());
+        events.send(CodexEvent::Error("boom".into())).unwrap();
+        events.send(CodexEvent::LimitReached).unwrap();
+        events.send(CodexEvent::TurnFinished).unwrap();
+        poll(&mut app);
+        assert_eq!(last_turn_error(&app).as_deref(), Some("boom"));
+        assert_eq!(last_error(&app).as_deref(), Some("boom"));
+        assert!(app.codex.limit_reached());
+        app.codex.clear_limit();
+        assert!(!app.codex.limit_reached());
+        new_chat(&mut app);
+        assert_eq!(requests.try_recv().ok(), Some(CodexRequest::NewChat));
+        assert!(last_turn_error(&app).is_none(), "a new chat forgets");
+        app.codex.stop_turn();
+        assert_eq!(requests.try_recv().ok(), Some(CodexRequest::Stop));
+    }
 
     fn link() -> (CodexLink, Receiver<CodexRequest>, Sender<CodexEvent>) {
         let (tx, requests) = std::sync::mpsc::channel();
