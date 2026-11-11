@@ -1,0 +1,43 @@
+name: Full tests
+on: workflow_dispatch
+jobs:
+  full:
+    runs-on: windows-latest
+    timeout-minutes: 240
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_INCREMENTAL: "0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: checks
+          cache-on-failure: true
+      - name: Assets
+        if: always()
+        run: cargo xtask assets 2>&1 | tee assets.log
+      - name: Layers
+        if: always()
+        run: cargo xtask layers 2>&1 | tee layers.log
+      - name: UI tests (lib and integration)
+        if: always()
+        run: set -o pipefail; cargo test -p filmcraft-ui-egui --no-fail-fast 2>&1 | tee ui.log
+      - name: Engine, automation, app, cli
+        if: always()
+        run: set -o pipefail; cargo test -p filmcraft-engine -p filmcraft-automation -p filmcraft -p filmcraft-cli --no-fail-fast 2>&1 | tee rest.log
+      - name: Web build
+        if: always()
+        run: cargo xtask wasm 2>&1 | tee wasm.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-test-logs
+          path: "*.log"

@@ -1,0 +1,2 @@
+crates/ui-egui/src/i18n/*.tsv merge=union
+ATTRIBUTION.md merge=union

@@ -1,3 +1,28 @@
+## Fusemovie (este fork): vale acima do resto deste arquivo
+
+Este repositório é o Fusemovie, fork de storytold/filmcraft. Onde esta seção e o resto do arquivo
+discordam, esta seção vale.
+
+- Branch de trabalho e padrão: `studio-redesign`. Não há PR para `main`. Agentes trabalham em
+  branches `worktree-agent-<nome>` e não fazem push em `studio-redesign`.
+- CI próprio: `.github/workflows/checks.yml` e `build-windows.yml`. Não usar
+  `storytold/craft-common-actions`. Não rodar `cargo xtask ci` inteiro; rodar
+  `cargo clippy -p <crates tocados> --all-targets -- -D warnings` antes de cada commit.
+- Nunca abrir, automatizar ou emular navegador, nem disparar login (Codex, ChatGPT, Google).
+  Verificação visual só por testes kittest fora da tela.
+- `gh` sempre com `-R fernandinhomartins40/fusemovie`. Consultar o GitHub no máximo a cada 5 minutos.
+- Não esperar o CI: commit, push do próprio branch e terminar com o relatório.
+- Nome do produto: nunca escrever "FilmCraft" em texto que o usuário vê; usar `{app}` nos
+  catálogos e `crate::brand::APP_NAME` no código. Nomes de crate, `.fcproj` e variáveis
+  `FILMCRAFT_*` não mudam.
+- Toda string nova passa pelo `tl!` e ganha linha em `crates/ui-egui/src/i18n/pt-br.tsv` no mesmo
+  commit. Cores só por `theme::Tokens`.
+- Testes do layout antigo usam `FilmcraftApp::new_classic`; o padrão (`new`) é o Studio.
+- As marcas ArtCraft de `docs/brand/` não podem ser usadas (fork).
+- Armadilhas do egui deste fork: `ctx.data` dentro de `ctx.data_mut` trava o app; usar
+  `Id::unique`, não `Id::new`; `ScrollArea::horizontal` não converte a roda vertical.
+- Não ler arquivos grandes inteiros (`menus.rs`, `effect_controls.rs`, `monitor.rs`): Grep e trechos.
+
 <!-- craft-house-rules:start core source=dde09ea31e2e457f5b4653a6e76f7cdf55944bdf sha256=540e6cea75d12d0710c3dca89658328e81e508ecef102446ca5bb95b7c0b92bb -->
 ## House rules
 
