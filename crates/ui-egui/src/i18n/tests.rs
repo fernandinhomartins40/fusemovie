@@ -108,15 +108,15 @@ fn the_current_language_is_per_thread() {
     // any entry the Spanish catalog has
     let (entries, _) = catalog::parse_entries(include_str!("es.tsv"));
     let Some((_, en, es)) = entries.into_iter().find(|(ctx, en, es)| ctx.is_empty() && en != es) else { return };
-    // `t` replaces `{app}` with the product name, so compare against the replaced text
-    let (en, es) = (en.replace("{app}", crate::brand::APP_NAME), es.replace("{app}", crate::brand::APP_NAME));
+    // `t` takes the key with `{app}` and returns the text with the product name in it
+    let app = |s: &str| s.replace("{app}", crate::brand::APP_NAME);
     set_current(Language::Es);
-    assert_eq!((current(), t(&en)), (Language::Es, es.as_str()));
+    assert_eq!((current(), t(&en)), (Language::Es, app(&es).as_str()));
     // another thread (another test) still draws in English
     let source = en.clone();
-    assert_eq!(std::thread::spawn(move || t(&source).to_string()).join().ok(), Some(en.clone()));
+    assert_eq!(std::thread::spawn(move || t(&source).to_string()).join().ok(), Some(app(&en)));
     set_current(Language::En);
-    assert_eq!(t(&en), en);
+    assert_eq!(t(&en), app(&en));
 }
 
 #[test]
