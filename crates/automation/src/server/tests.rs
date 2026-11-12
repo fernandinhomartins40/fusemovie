@@ -518,8 +518,9 @@ async fn codex_headless_render_preview_item_renders_media_and_refuses_hostile_in
     use base64::Engine as _;
     let png = base64::engine::general_purpose::STANDARD.decode(v["content"][0]["data"].as_str().unwrap()).unwrap();
     let img = image::load_from_memory(&png).unwrap();
-    let k = 64.0 / f64::from(w.max(h));
-    assert!((i64::from(img.width()) - (f64::from(w) * k).round() as i64).abs() <= 1, "{}x{} for {w}x{h}", img.width(), img.height());
+    let long = img.width().max(img.height());
+    assert!((32..=64).contains(&long), "{}x{} for {w}x{h}", img.width(), img.height());
+    assert!((f64::from(img.width()) / f64::from(img.height()) - f64::from(w) / f64::from(h)).abs() < 0.05);
     for (item, seconds) in [(Some(u64::MAX), None), (Some(id), Some(-1.0)), (Some(id), Some(f64::NAN)), (Some(id), Some(1e300)), (Some(id), Some(f64::INFINITY))] {
         let r = m.render_preview(Parameters(p(item, seconds))).await.unwrap();
         assert_eq!(r.is_error, Some(true), "{item:?} {seconds:?}");

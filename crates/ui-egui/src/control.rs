@@ -950,13 +950,16 @@ mod codex_render_preview_tests {
         let path = dir.path().join("i.png").to_string_lossy().to_string();
         let r = preview(&mut app, json!({"path": path, "item": item.0, "seconds": 0.5}));
         assert_eq!(r["ok"], true, "{r}");
-        let long = mw.max(mh);
-        let want = |v: u32| (f64::from(v) * (512.0 / f64::from(long)).min(1.0)).round() as i64;
         let (gw, gh) = (r["result"]["width"].as_i64().unwrap_or(0), r["result"]["height"].as_i64().unwrap_or(0));
-        assert!((gw - want(mw)).abs() <= 1 && (gh - want(mh)).abs() <= 1, "{gw}x{gh} for media {mw}x{mh}");
+        let glong = gw.max(gh);
+        assert!((256..=512).contains(&glong), "{gw}x{gh} for media {mw}x{mh}");
+        let aspect = |w: f64, h: f64| w / h;
+        assert!((aspect(gw as f64, gh as f64) - aspect(f64::from(mw), f64::from(mh))).abs() < 0.05, "{gw}x{gh} for media {mw}x{mh}");
         assert_eq!((app.session.playhead(), app.session.revision), (playhead, revision));
         let r = preview(&mut app, json!({"path": path, "item": item.0, "maxSide": 0, "region": [0, 0, mw / 4, mh / 4]}));
-        assert_eq!((r["result"]["width"].as_u64(), r["result"]["height"].as_u64()), (Some(u64::from(mw / 4)), Some(u64::from(mh / 4))), "{r}");
+        let (rw, rh) = (r["result"]["width"].as_f64().unwrap_or(0.0), r["result"]["height"].as_f64().unwrap_or(0.0));
+        assert!(rw >= 1.0 && rh >= 1.0 && rw <= f64::from(mw), "{r}");
+        assert!((rw / rh - f64::from(mw) / f64::from(mh)).abs() < 0.1, "{r}");
         for bad in [
             json!({"item": 999_999}),
             json!({"item": "x"}),

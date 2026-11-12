@@ -431,7 +431,7 @@ impl FilmcraftMcp {
             if p.region.is_some() {
                 return Ok(fail("`region` is only supported in bridge mode"));
             }
-            if let Some(item) = p.item {
+            if let (Some(item), Backend::Headless(s)) = (p.item, &*self.backend) {
                 let s = s.clone();
                 let max = p.max_side.unwrap_or(512);
                 let r = tokio::task::spawn_blocking(move || -> Result<Vec<u8>, AutomationError> {
